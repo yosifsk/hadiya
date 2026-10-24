@@ -1,0 +1,37 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container-narrow" style="padding:34px 0 60px">
+    <h1 data-i18n="privacy_title">سياسة الخصوصية</h1>
+
+    <div class="panel" style="margin-top:20px">
+      <h3 data-i18n="p_1_t">ما الذي نجمعه</h3>
+      <ul class="trust-list small">
+        <li><span class="ok">•</span><span data-i18n="p_1_b">العنوان العام لمحفظتك (يرتبط بجلسة الحساب وبتبرعاتك)</span></li>
+        <li><span class="ok">•</span><span data-i18n="p_2_b">اسم اختياري ورسالة اختيارية ترسلهما مع التبرّع</span></li>
+        <li><span class="ok">•</span><span data-i18n="p_3_b">سجل تبرعات الحملة (معاملة، رمز، مبلغ، وقت) — وهو معلن على السلسلة أصلًا</span></li>
+        <li><span class="ok">•</span><span data-i18n="p_4_b">رمز تحقق موقّع لكل جلسة دخول (صالح حتى انتهاء الجلسة)</span></li>
+      </ul>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3 data-i18n="p_5_t">ما الذي لا نجمعه</h3>
+      <ul class="trust-list small">
+        <li><span class="ok">✔</span><span data-i18n="p_5_b">لا نطلب Seeds ولا نخزّن مفاتيح خاصة ولا نشغّل خدمة محفظة.</span></li>
+        <li><span class="ok">✔</span><span data-i18n="p_6_b">لا نرسل بريدًا تسويقيًا ولا نشارك بياناتك مع أطراف ثالثة.</span></li>
+        <li><span class="ok">✔</span><span data-i18n="p_7_b">لا نحتفظ بأموال — لا توجد أرصدة داخلية على المنصة.</span></li>
+      </ul>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3 data-i18n="p_8_t">ملفات الارتباط</h3>
+      <p class="small" data-i18n="p_8_b">نستخدم كوكي واحدة للجلسة (HttpOnly + SameSite=Lax) وlocalStorage لتفضيل اللغة فقط.</p>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3 data-i18n="p_9_t">حقوقك</h3>
+      <p class="small" data-i18n="p_9_b">يمكنك طلب حذف حسابك وسجلك من <a href="mailto:<%= brand.supportEmail %>"><%= brand.supportEmail %></a>. ملاحظة: بيانات التبرع موجودة أصلًا على الشبكة العامة ولا يمكن حذفها من هناك.</p>
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

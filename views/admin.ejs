@@ -1,0 +1,253 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container" style="padding:26px 0 60px">
+    <div class="spread" style="margin-bottom:20px">
+      <div>
+        <h1 style="margin:0" data-i18n="admin_title">لوحة الإدارة</h1>
+        <p class="muted small" style="margin:4px 0 0">
+          <span data-i18n="admin_signed_as">مسجّل الدخول كـ</span>
+          <span class="mono"><%= user %></span>
+          <span class="badge badge-chain"><%= authMethod === 'wallet' ? 'محفظة موقّعة' : 'مفتاح إدارة' %></span>
+        </p>
+      </div>
+      <button class="btn btn-outline btn-sm" data-admin-reload data-i18n="refresh">تحديث</button>
+    </div>
+
+    <div class="alert alert-warn" data-i18n="admin_security_note">
+      كل إجراء حسّاس هنا يُسجَّل في سجل التدقيق. تغيير محفظة الجهة المستفيدة **غير ممكن من هنا** —
+      يجب أن يوقّعه **منظّم الحملة** في محفظته (العقد يفرض ذلك على مستوى السلسلة).
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-atab="overview" data-i18n="admin_tab_overview">نظرة عامة</button>
+      <button class="tab" data-atab="fees" data-i18n="admin_tab_fees">الرسوم</button>
+      <button class="tab" data-atab="review" data-i18n="admin_tab_review">مراجعة الحملات</button>
+      <button class="tab" data-atab="db" data-i18n="admin_tab_db">قاعدة البيانات</button>
+      <button class="tab" data-atab="integrity" data-i18n="admin_tab_integrity">فحص السلامة</button>
+      <button class="tab" data-atab="audit" data-i18n="admin_tab_audit">سجل التدقيق</button>
+      <button class="tab" data-atab="security" data-i18n="admin_tab_security">الأمان</button>
+    </div>
+
+    <!-- ============ نظرة عامة ============ -->
+    <section class="atab-panel" data-atab="overview">
+      <div class="kpi-grid" id="admin-kpis"></div>
+      <div class="grid-3">
+        <div class="panel">
+          <h3 data-i18n="admin_onchain">العقد على السلسلة</h3>
+          <div id="admin-onchain" class="small"></div>
+        </div>
+        <div class="panel">
+          <h3 data-i18n="admin_campaigns">الحملات</h3>
+          <div id="admin-campaigns-count" class="small"></div>
+        </div>
+        <div class="panel">
+          <h3 data-i18n="admin_donations">التبرعات</h3>
+          <div id="admin-donations-count" class="small"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ الرسوم ============ -->
+    <section class="atab-panel" data-atab="fees" hidden>
+      <div class="grid-3" style="margin-bottom:18px">
+        <div class="panel">
+          <h3 data-i18n="admin_fees_onchain">الحدود على السلسلة (immutable)</h3>
+          <div id="fee-onchain" class="small"></div>
+        </div>
+        <div class="panel">
+          <h3 data-i18n="admin_fees_effective">الشرائح الفعّالة الآن</h3>
+          <div id="fee-effective" class="small"></div>
+        </div>
+        <div class="panel">
+          <h3 data-i18n="admin_fees_apply">تطبيق على السلسلة</h3>
+          <p class="small muted" data-i18n="admin_fees_apply_note">
+            الشرائح على السلسلة تُضبط في وحدة الرمز عبر <span class="mono">setTiers</span>.
+            بعد الحفظ شغّل: <span class="mono">npm run set:tiers</span>
+          </p>
+          <div id="fee-pending" class="small"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 data-i18n="admin_edit_tiers">تعديل شرائح الرسوم</h3>
+        <div id="fee-editor"></div>
+        <div class="row-flex" style="margin-top:14px">
+          <button class="btn btn-primary" id="fee-save" data-i18n="save">حفظ</button>
+          <button class="btn btn-outline" id="fee-reset" data-i18n="reset">استعادة الافتراضي</button>
+          <span id="fee-status" class="small"></span>
+        </div>
+        <div class="alert alert-info" style="margin-top:14px" data-i18n="admin_fees_limits">
+          لا يمكن تجاوز حدود العقد (min/max immutable). تغيير الشرائح يتطلّب تشغيل
+          <span class="mono">npm run set:tiers</span> بعد الحفظ.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ مراجعة الحملات ============ -->
+    <section class="atab-panel" data-atab="review" hidden>
+      <div class="row-flex" style="margin-bottom:14px">
+        <select id="review-status">
+          <option value="pending_review">بانتظار المراجعة</option>
+          <option value="active">نشطة</option>
+          <option value="paused">موقوفة</option>
+          <option value="rejected">مرفوضة</option>
+          <option value="closed">مغلقة</option>
+          <option value="">الكل</option>
+        </select>
+        <input type="text" id="review-search" placeholder="بحث بالعنوان…">
+        <button class="btn btn-outline btn-sm" id="review-refresh" data-i18n="refresh">تحديث</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="th_campaign">الحملة</th>
+              <th data-i18n="th_status">الحالة</th>
+              <th data-i18n="th_charity_wallet">محفظة المستفيد</th>
+              <th data-i18n="th_organizer">المنظّم</th>
+              <th data-i18n="th_raised">المحصّل</th>
+              <th data-i18n="th_actions">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="review-rows"><tr><td colspan="6" class="muted" data-i18n="loading">جارٍ التحميل…</td></tr></tbody>
+        </table>
+      </div>
+      <div id="review-detail" style="margin-top:18px"></div>
+    </section>
+
+    <!-- ============ قاعدة البيانات ============ -->
+    <section class="atab-panel" data-atab="db" hidden>
+      <div class="panel" style="margin-bottom:16px">
+        <h3 data-i18n="admin_db_stats">إحصاءات القاعدة</h3>
+        <div id="db-stats" class="small"></div>
+      </div>
+      <div class="panel">
+        <div class="row-flex" style="margin-bottom:12px">
+          <select id="db-table"></select>
+          <input type="text" id="db-search" placeholder="بحث نصي…">
+          <button class="btn btn-outline btn-sm" id="db-load" data-i18n="load">تحميل</button>
+          <a class="btn btn-outline btn-sm" id="db-export" href="/api/admin/export/campaigns" download data-i18n="export_csv">تصدير CSV</a>
+        </div>
+        <div class="table-wrap"><table><tbody id="db-rows"><tr><td class="muted" data-i18n="loading">جارٍ التحميل…</td></tr></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- ============ فحص السلامة ============ -->
+    <section class="atab-panel" data-atab="integrity" hidden>
+      <div class="panel">
+        <h3 data-i18n="admin_integrity">فحص السلامة</h3>
+        <button class="btn btn-primary btn-sm" id="integrity-run" data-i18n="run_check">تشغيل الفحص</button>
+        <div id="integrity-result" style="margin-top:14px"></div>
+      </div>
+    </section>
+
+    <!-- ============ سجل التدقيق ============ -->
+    <section class="atab-panel" data-atab="audit" hidden>
+      <div class="panel">
+        <div class="row-flex" style="margin-bottom:12px">
+          <button class="btn btn-outline btn-sm" id="audit-refresh" data-i18n="refresh">تحديث</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="th_time">الوقت</th>
+                <th data-i18n="th_actor">الفاعل</th>
+                <th data-i18n="th_action">الإجراء</th>
+                <th data-i18n="th_target">الهدف</th>
+                <th data-i18n="th_ip">IP</th>
+              </tr>
+            </thead>
+            <tbody id="audit-rows"><tr><td colspan="5" class="muted" data-i18n="loading">جارٍ التحميل…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ الأمان ============ -->
+    <section class="atab-panel" data-atab="security" hidden>
+      <div class="grid-3">
+        <div class="panel">
+          <h3 data-i18n="admin_sessions">الجلسات النشطة</h3>
+          <div class="row-flex" style="margin-bottom:10px">
+            <button class="btn btn-outline btn-sm" id="sessions-refresh" data-i18n="refresh">تحديث</button>
+            <button class="btn btn-outline btn-sm" id="sessions-revoke" data-i18n="revoke_all">إلغاء كل الجلسات</button>
+          </div>
+          <div id="sessions-list" class="small"></div>
+        </div>
+
+        <div class="panel">
+          <h3 data-i18n="admin_rotate_key">تدوير مفتاح الإدارة</h3>
+          <div class="field">
+            <label data-i18n="new_key">مفتاح جديد (١٦ حرفًا على الأقل)</label>
+            <input type="password" id="new-admin-key" autocomplete="new-password">
+          </div>
+          <button class="btn btn-primary btn-sm" id="rotate-key" data-i18n="rotate">تدوير</button>
+          <span id="rotate-status" class="small"></span>
+        </div>
+
+        <div class="panel">
+          <h3 data-i18n="admin_accounts">حسابات الإدارة</h3>
+          <div class="field">
+            <label data-i18n="new_account">حساب جديد</label>
+            <div class="row-flex">
+              <input type="text" id="new-account-name" placeholder="اسم المستخدم" style="max-width:220px">
+              <button class="btn btn-primary btn-sm" id="create-account" data-i18n="create_account">إنشاء + توليد كلمة مرور</button>
+            </div>
+            <div id="new-account-result" class="small" style="margin-top:8px"></div>
+          </div>
+          <div id="accounts-list" class="small"></div>
+        </div>
+
+        <div class="panel">
+          <h3 data-i18n="change_password">تغيير كلمة مرور حسابي</h3>
+          <div class="field">
+            <label data-i18n="current_password">كلمة المرور الحالية</label>
+            <input type="password" id="current-password" autocomplete="current-password">
+          </div>
+          <div class="field">
+            <label data-i18n="new_password">كلمة المرور الجديدة</label>
+            <input type="password" id="new-password" autocomplete="new-password">
+          </div>
+          <button class="btn btn-primary btn-sm" id="change-password" data-i18n="save">حفظ</button>
+          <span id="change-password-status" class="small"></span>
+        </div>
+
+        <div class="panel">
+          <h3 data-i18n="admin_users">المستخدمون</h3>
+          <div id="users-list" class="small"></div>
+        </div>
+
+        <div class="panel">
+          <h3 data-i18n="admin_settings">إعدادات المنصة</h3>
+          <div class="field">
+            <label data-i18n="collector_address">محفظة الكولكتر</label>
+            <input type="text" id="set-collector" class="mono" placeholder="0x…">
+            <div class="hint" data-i18n="collector_locked">مثبّتة (immutable) داخل العقد — تغييرها هنا لا يغيّر العقد.</div>
+          </div>
+          <div class="field">
+            <label data-i18n="owner_address">عنوان المشرف</label>
+            <input type="text" id="set-owner" class="mono" placeholder="0x…">
+          </div>
+          <button class="btn btn-primary btn-sm" id="save-settings" data-i18n="save">حفظ</button>
+          <span id="settings-status" class="small"></span>
+        </div>
+
+        <div class="panel">
+          <h3 data-i18n="admin_addresses">محافظ المشرفين</h3>
+          <div class="field">
+            <label data-i18n="addresses_list">قائمة العناوين (مفصولة بفواصل)</label>
+            <textarea id="admin-addresses" rows="3" class="mono"></textarea>
+          </div>
+          <button class="btn btn-primary btn-sm" id="save-addresses" data-i18n="save">حفظ</button>
+          <span id="addresses-status" class="small"></span>
+          <p class="small muted" style="margin-top:10px" data-i18n="admin_addresses_note">
+            هذه العناوين وحدها تستطيع الدخول بلوحة الإدارة بتوقيع المحفظة، حتى لو سُرق مفتاح الإدارة.
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+<%- include('partials/footer') %>

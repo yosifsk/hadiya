@@ -1,0 +1,125 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container" style="padding:30px 0 60px">
+    <div class="spread" style="margin-bottom:22px">
+      <div>
+        <h1 style="margin:0" data-i18n="dash_title">لوحة الحملة</h1>
+        <p class="muted" style="margin:4px 0 0" data-no-i18n><%= campaign.title %></p>
+      </div>
+      <div class="row-flex">
+        <a class="btn btn-outline btn-sm" href="/c/<%= campaign.slug %>" data-i18n="view_public">عرض الصفحة العامة</a>
+        <% if (isCollector) { %>
+          <a class="btn btn-outline btn-sm" href="/collector" data-i18n="collector_panel">لوحة الكولكتر</a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi accent">
+        <div class="label" data-i18n="kpi_raised">المحصّل (مؤكد)</div>
+        <div class="value"><%= helpers.usd(totals.totalUsd) %></div>
+        <div class="sub"><%= totals.donorCount %> <span data-i18n="donations_word">تبرّع</span></div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="kpi_goal">الهدف</div>
+        <div class="value"><%= helpers.usd(campaign.goal_usd) %></div>
+        <div class="sub"><%= Math.round(progress) %>% <span data-i18n="funded">مموّل</span></div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="kpi_fee">رسوم المنصة (متدرّجة حتى ٩٪)</div>
+        <div class="value"><%= helpers.usd(totals.feeUsd) %></div>
+        <div class="sub" data-i18n="kpi_fee_sub">تُحصل في نفس معاملة التبرّع</div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="kpi_net">الصافي للجهة المستفيدة</div>
+        <div class="value"><%= helpers.usd(totals.totalUsd - totals.feeUsd) %></div>
+        <div class="sub"><%= helpers.shortAddr(campaign.charity_wallet) %></div>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-bottom:26px">
+      <div class="panel">
+        <h3>📬 <span data-i18n="receive_at">استقبل أموالك هنا</span></h3>
+        <div class="addr-box">
+          <span class="val"><%= campaign.charity_wallet %></span>
+          <button class="copy-btn" data-copy="<%= campaign.charity_wallet %>">⧉</button>
+        </div>
+        <div class="small muted" style="margin-top:8px">
+          <span data-i18n="chain">الشبكة</span>: <%= helpers.chainName(campaign.chain_id) %> · <%= campaign.token_symbol %>
+        </div>
+        <div class="small muted" id="dash-balance" data-chain="<%= campaign.chain_id %>" data-address="<%= campaign.charity_wallet %>" data-token="<%= campaign.token_symbol %>">
+          <span data-i18n="reading_balance">جارٍ قراءة الرصيد…</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>⚙️ <span data-i18n="settlement">طريقة التحويل</span></h3>
+        <% if (campaign.splitter_address) { %>
+          <p class="small"><span data-i18n="via_contract">تحويل عبر العقد الذكي</span></p>
+          <div class="addr-box"><span class="val"><%= campaign.splitter_address %></span><button class="copy-btn" data-copy="<%= campaign.splitter_address %>">⧉</button></div>
+          <div class="small muted" style="margin-top:6px"><span data-i18n="splitter_campaign_id">رقم الحملة داخل العقد</span>: <%= campaign.splitter_campaign_id %></div>
+        <% } else { %>
+          <p class="small" data-i18n="direct_note">
+            التحويل مباشر إلى محفظة الجهة المستفيدة. رسوم المنصة ٩٪ تُسجَّل كـ«غير محصّلة» وتُحصَّل من المنصة على المنصة.
+          </p>
+        <% } %>
+      </div>
+
+      <div class="panel">
+        <h3>📝 <span data-i18n="add_update">أضف تحديثًا</span></h3>
+        <form id="update-form">
+          <input type="text" name="title" placeholder="عنوان التحديث (اختياري)" style="margin-bottom:8px">
+          <textarea name="body" placeholder="ما الجديد؟" required style="min-height:90px"></textarea>
+          <button class="btn btn-primary btn-sm" type="submit" style="margin-top:8px" data-i18n="publish">نشر</button>
+          <span id="update-status" class="small muted"></span>
+        </form>
+      </div>
+    </div>
+
+    <h3 style="font-size:18px" data-i18n="donations_table">سجل التبرعات</h3>
+    <% if (!donations.length) { %>
+      <div class="empty" data-i18n="no_donations">لا توجد تبرعات بعد.</div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="th_donor">الداعم</th>
+              <th data-i18n="th_amount">المبلغ</th>
+              <th data-i18n="th_net">الصافي</th>
+              <th data-i18n="th_fee">الرسوم</th>
+              <th data-i18n="th_rate">النسبة</th>
+              <th data-i18n="th_status">الحالة</th>
+              <th data-i18n="th_tx">المعاملة</th>
+              <th data-i18n="th_date">التاريخ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% donations.forEach(d => { %>
+              <tr>
+                <td><%= d.is_anonymous ? 'داعم مجهول' : (d.donor_name || helpers.shortAddr(d.donor_address)) %></td>
+                <td class="mono"><%= helpers.formatRaw(d.amount_raw, d.token_symbol, d.chain_id) %></td>
+                <td class="mono"><%= helpers.formatRaw(d.charity_raw, d.token_symbol, d.chain_id) %></td>
+                <td class="mono"><%= helpers.formatRaw(d.fee_raw, d.token_symbol, d.chain_id) %></td>
+                <td class="mono"><%= d.fee_bps ? (d.fee_bps / 100).toFixed(d.fee_bps % 100 === 0 ? 0 : 2) + '%' : '—' %></td>
+                <td>
+                  <% if (d.status === 'confirmed') { %>
+                    <span class="badge badge-confirmed" data-i18n="confirmed">مؤكد</span>
+                  <% } else if (d.status === 'pending') { %>
+                    <span class="badge badge-pending" data-i18n="pending">بانتظار التأكيد</span>
+                  <% } else { %>
+                    <span class="badge badge-failed" data-i18n="failed">فشل</span>
+                  <% } %>
+                </td>
+                <td class="mono"><a href="<%= helpers.explorerTx(d.chain_id, d.tx_hash) %>" target="_blank" rel="noopener"><%= helpers.shortAddr(d.tx_hash) %></a></td>
+                <td class="small muted"><%= helpers.dateTimeAr(d.confirmed_at || d.created_at) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</main>
+<%- include('partials/footer') %>

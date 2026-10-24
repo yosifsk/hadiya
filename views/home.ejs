@@ -1,0 +1,177 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="hero-eyebrow">✦ <span data-i18n="hero_badge">تبرّع بالعملات الرقمية</span></span>
+      <h1 data-i18n="hero_title">كل تبرّع يذهب إلى محفظة الجهة المستفيدة مباشرة</h1>
+      <p class="lead" data-i18n="hero_lead">
+        منصة تبرّع مبنية على(blockchain): اختر الحملة، اربط محفظتك، وادفع بـ ETH أو USDC.
+        المقسّم الذكي يحوّل <strong>٩١٪</strong> إلى الجهة المستفيدة و<strong>٩٪</strong> إلى المنصة داخل نفس المعاملة.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="/discover" data-i18n="hero_cta1">اكتشف الحملات</a>
+        <a class="btn btn-outline btn-lg" href="/create" data-i18n="hero_cta2">ابدأ حملتك</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="num"><%= helpers.usdShort(stats.grossUsd) %></div>
+          <div class="lbl" data-i18n="stat_raised">إجمالي ما وصل</div>
+        </div>
+        <div>
+          <div class="num"><%= stats.campaigns %></div>
+          <div class="lbl" data-i18n="stat_campaigns">حملة نشطة</div>
+        </div>
+        <div>
+          <div class="num"><%= stats.donations %></div>
+          <div class="lbl" data-i18n="stat_donations">تبرّع مؤكد</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-card">
+      <h2 data-i18n="split_title">كيف يُقسَّم كل تبرّع</h2>
+      <p class="muted" data-i18n="split_sub">الرسوم متدرّجة: كلما زاد المبلغ انخفضت النسبة</p>
+
+      <div class="split-row">
+        <span data-i18n="split_gross">المبلغ الإجمالي</span>
+        <span class="amount">100.00 USDC</span>
+      </div>
+      <div class="split-row">
+        <span data-i18n="split_charity">إلى محفظة الجهة المستفيدة</span>
+        <span class="amount">91.00 USDC</span>
+      </div>
+      <div class="split-row">
+        <span class="fee" data-i18n="split_fee">رسوم المنصة (٩٪)</span>
+        <span class="amount fee">9.00 USDC</span>
+      </div>
+      <div class="split-row">
+        <span data-i18n="split_total">مجموع ما يصل فعليًا</span>
+        <span class="amount">100.00 USDC</span>
+      </div>
+
+      <div class="chip-row" style="margin-top:14px">
+        <span class="chip static">حتى $200 → 9%</span>
+        <span class="chip static">>$200 → 7%</span>
+        <span class="chip static">>$300 → 5%</span>
+        <span class="chip static">>$400 → 3%</span>
+      </div>
+
+      <div class="secure-note">
+        <span>🔒</span>
+        <span data-i18n="split_note">
+          الحساب يتم داخل عقد <span class="mono">DonationSplitter</span> المفتوح المصدر؛
+          لا تلمس أموالك إلا محفظة المتبرّع ومحفظتا الجهة المستفيدة والمنصة.
+        </span>
+      </div>
+      <div class="row-flex" style="margin-top:16px">
+        <a class="btn btn-outline btn-sm" href="/how-it-works" data-i18n="hero_more">التفاصيل التقنية</a>
+        <a class="btn btn-ghost btn-sm" href="/pricing" data-i18n="hero_pricing">جدول الرسوم</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2 data-i18n="feat_title">حملات تحتاج دعمك</h2>
+        <div class="sub" data-i18n="feat_sub">آخر الحملات المنشورة — كل الأرقام مؤكَّدة من السلسلة</div>
+      </div>
+      <a class="btn btn-outline btn-sm" href="/discover" data-i18n="feat_all">عرض الكل</a>
+    </div>
+
+    <% if (!featured.length) { %>
+      <div class="empty" data-i18n="feat_empty">لا توجد حملات بعد. ابدأ أول حملة الآن.</div>
+    <% } else { %>
+      <div class="grid">
+        <% featured.forEach(c => { %>
+          <article class="card">
+            <div class="card-media">
+              <% if (c.cover_url) { %><img src="<%= c.cover_url %>" alt="<%= c.title %>" loading="lazy"><% } %>
+              <div class="fallback">💚</div>
+              <span class="tag"><%= helpers.categoryLabel(c.category) %></span>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title" data-no-i18n><a href="/c/<%= c.slug %>"><%= helpers.localizedCampaign(c).title %></a></h3>
+              <p class="card-sub" data-no-i18n><%= helpers.localizedCampaign(c).subtitle %></p>
+              <div class="progress <%= c.accent || 'emerald' %>"><i style="width:<%= c.progress.toFixed(1) %>%"></i></div>
+              <div class="card-meta">
+                <span><strong><%= helpers.usdShort(c.raised_usd) %></strong> <%= c.donors %> <span data-i18n="of_goal">من</span> <%= helpers.usdShort(c.goal_usd) %></span>
+                <span><%= Math.round(c.progress) %>%</span>
+              </div>
+            </div>
+          </article>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2 data-i18n="cat_title">تصفّح حسب الفئة</h2>
+        <div class="sub" data-i18n="cat_sub">اختر القطاع الأقرب لقضيتك</div>
+      </div>
+    </div>
+    <div class="chip-row">
+      <% categories.forEach(cat => { %>
+        <a class="chip" href="/discover?category=<%= cat.key %>">
+          <%= cat.label %> <span class="count">(<%= cat.count %>)</span>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <h2 data-i18n="how_title">كيف تعمل المنصة</h2>
+        <div class="sub" data-i18n="how_sub">ثلاث خطوات واضحة، وكل خطوة قابلة للتحقق على السلسلة</div>
+      </div>
+      <a class="btn btn-outline btn-sm" href="/how-it-works" data-i18n="how_all">الشرح الكامل</a>
+    </div>
+
+    <div class="steps">
+      <div class="step reveal">
+        <h3 data-i18n="how_1_t">اختر الحملة</h3>
+        <p class="muted" data-i18n="how_1_b">تصفّح حسب الفئة واقرأ القصة. كل حملة تعرض محفظة الجهة المستفيدة وعنوانها على الشبكة — افحصها قبل أن تتبرّع.</p>
+      </div>
+      <div class="step reveal">
+        <h3 data-i18n="how_2_t">اربط محفظتك وادفع</h3>
+        <p class="muted" data-i18n="how_2_b">ادفع بـ ETH أو USDC. للعملات التي تحتاج موافقة، خطوة approve منفصلة قبل التحويل — كل شيء ظاهر لك قبل التأكيد.</p>
+      </div>
+      <div class="step reveal">
+        <h3 data-i18n="how_3_t">تابع ما يصل</h3>
+        <p class="muted" data-i18n="how_3_b">بعد التأكيد على السلسلة تظهر المعاملة في صفحة الحملة ولوحة الكولكتر، مع رابط مستكشف مستقل يمكن التحقق منه بنفسك.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="container">
+    <div class="grid-3">
+      <div class="panel">
+        <h3>🔐 <span data-i18n="trust_1_t">مفتاحك لا يغادر جهازك</span></h3>
+        <p class="muted small" data-i18n="trust_1_b">نطلب توقيع رسالة واحدة فقط لتسجيل الدخول. لا نطلب أي Seeds ولا نخزّن أي مفاتيح خاصة على الخادم.</p>
+      </div>
+      <div class="panel">
+        <h3>⛓️ <span data-i18n="trust_2_t">الأرقام من السلسلة</span></h3>
+        <p class="muted small" data-i18n="trust_2_b">المبالغ تُقرأ من أحداث العقد بعد تأكيد المعاملة، لا من أرقام يرسلها المتصفح.</p>
+      </div>
+      <div class="panel">
+        <h3>🧾 <span data-i18n="trust_3_t">إثبات تبرّع</span></h3>
+        <p class="muted small" data-i18n="trust_3_b">لكل تبرّع رابط معاملة ورابط محفظة — يمكن لأي جهة تحقق مستقلة المطابقة.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<%- include('partials/footer') %>

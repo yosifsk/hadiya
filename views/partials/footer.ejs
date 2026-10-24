@@ -1,0 +1,64 @@
+<footer class="footer">
+  <div class="container">
+    <div class="cols">
+      <div>
+        <div class="logo">
+          <span class="logo-mark">✦</span>
+          <span>
+            <span data-i18n="brand_name"><%= brand.nameAr %></span>
+            <span class="logo-sub" data-i18n="brand_name_en"><%= brand.name %></span>
+          </span>
+        </div>
+        <p class="small" style="margin-top:12px;max-width:42ch">
+          منصة تبرّع بالعملات الرقمية. كل تبرّع يُقسَّم على السلسلة داخل معاملة واحدة:
+          <strong>٩١٪</strong> لمحفظة الجهة المستفيدة و<strong>٩٪</strong> لمحفظة المنصة.
+        </p>
+        <p class="small muted" style="color:#8fa89d">
+          لا نضمن استرداد المبالغ: مدفوعات العملات الرقمية غير قابلة للعكس.
+        </p>
+      </div>
+      <div>
+        <h4>المنصة</h4>
+        <ul>
+          <li><a href="/discover">اكتشف الحملات</a></li>
+          <li><a href="/create">ابدأ حملة</a></li>
+          <li><a href="/pricing">الرسوم</a></li>
+          <li><a href="/how-it-works">كيف تعمل</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>الشفافية</h4>
+        <ul>
+          <li><a href="/collector">لوحة الكولكتر</a></li>
+          <li><a href="/faq">الأسئلة الشائعة</a></li>
+          <li><a href="/terms">الشروط والأحكام</a></li>
+          <li><a href="/privacy">سياسة الخصوصية</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>الدعم</h4>
+        <ul>
+          <li><a href="mailto:<%= brand.supportEmail %>"><%= brand.supportEmail %></a></li>
+          <li><span class="small">محفظة الكولكتر:</span><br><span class="mono small"><%= collectorAddress ? helpers.shortAddr(collectorAddress) : '—' %></span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="bottom">
+      <span>© <%= year %> <%= brand.name %> — <%= brand.legalEntity %></span>
+      <span>الأسعار بالدولار وتُحدَّث من مصادر عامة. رسوم المنصة <%= helpers.feeLabel() %>.</span>
+    </div>
+  </div>
+</footer>
+<script src="/js/i18n-labels.js?v=<%= assetV %>"></script>
+<script src="/js/i18n-app.js?v=<%= assetV %>"></script>
+<script src="/js/i18n-phrases.js?v=<%= assetV %>"></script>
+<script src="/js/i18n.js?v=<%= assetV %>"></script>
+<script src="/js/app.js?v=<%= assetV %>"></script>
+<% if (typeof path !== 'undefined' && (path === '/admin' || path === '/admin-login')) { %>
+<script src="/js/admin.js?v=<%= assetV %>"></script>
+<% } %>
+<script src="/js/assistant.js?v=<%= assetV %>"></script>
+<!-- منطقة حيّة عامة لرسائل الحالة (لقارئات الشاشة) -->
+<div id="live-region" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+</body>
+</html>

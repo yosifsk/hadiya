@@ -1,0 +1,125 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container-narrow" style="padding:34px 0 60px">
+    <h1 data-i18n="login_title">تسجيل الدخول</h1>
+    <p class="muted" data-i18n="login_lead">ادخل باسم المستخدم وكلمة المرور، أو استخدم محفظتك بلا كلمة مرور.</p>
+
+    <% if (typeof notice !== 'undefined' && notice) { %>
+      <div class="alert alert-ok"><%= notice %></div>
+    <% } %>
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <div class="panel" style="margin-top:18px">
+      <form method="post" action="/login">
+        <div class="field">
+          <label data-i18n="username">اسم المستخدم</label>
+          <input type="text" name="username" required autocomplete="username" placeholder="ahmad_2026"
+                 value="<%= (typeof values !== 'undefined' && values.username) || '' %>">
+        </div>
+        <div class="field">
+          <div class="spread">
+            <label data-i18n="password">كلمة المرور</label>
+            <a class="small" href="/forgot-password" data-i18n="forgot_link">نسيت كلمة المرور؟</a>
+          </div>
+          <input type="password" name="password" required autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary btn-lg btn-block" type="submit" data-i18n="sign_in">دخول</button>
+      </form>
+
+      <% if (typeof googleClientId !== 'undefined' && googleClientId) { %>
+        <div class="divider" style="margin:16px 0;text-align:center;color:var(--ink-3);font-size:13px" data-i18n="or_separator">أو</div>
+        <div id="google-signin" style="display:flex;justify-content:center"></div>
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <script>
+          (function () {
+            function render() {
+              if (!window.google || !window.google.accounts) return;
+              window.google.accounts.id.initialize({
+                client_id: <%- JSON.stringify(googleClientId) %>,
+                callback: function (response) {
+                  fetch('/api/auth/google', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ credential: response.credential })
+                  }).then(function (r) { return r.json(); }).then(function (data) {
+                    if (data && data.ok) { location.href = '/account'; return; }
+                    var box = document.getElementById('google-error');
+                    if (box) { box.hidden = false; box.textContent = (data && data.error) || 'تعذّر تسجيل الدخول بجوجل'; }
+                  }).catch(function () {
+                    var box = document.getElementById('google-error');
+                    if (box) { box.hidden = false; box.textContent = 'تعذّر الاتصال بالخادم'; }
+                  });
+                }
+              });
+              window.google.accounts.id.renderButton(
+                document.getElementById('google-signin'),
+                { theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'filled_black' : 'outline', size: 'large', width: '320', text: 'continue_with' }
+              );
+            }
+            if (window.google && window.google.accounts) return render();
+            var t = setInterval(function () {
+              if (window.google && window.google.accounts) { clearInterval(t); render(); }
+            }, 200);
+          })();
+        </script>
+        <div class="alert alert-error" id="google-error" hidden style="margin-top:12px"></div>
+      <% } %>
+    </div>
+
+    <% if (demoUser && demoPass) { %>
+    <div class="panel" style="margin-top:14px;border-style:dashed">
+      <div class="spread">
+        <strong class="small" data-i18n="demo_data">بيانات التجربة</strong>
+        <button type="button" class="btn btn-ghost btn-sm" id="fill-demo" data-i18n="fill">تعبئة تلقائية</button>
+      </div>
+      <div class="small muted" style="margin-top:6px" data-i18n="demo_data_hint">
+        حساب المشرف التجريبي — اضغط «تعبئة تلقائية» لتعبئة النموذج.
+      </div>
+      <div class="small mono" style="margin-top:8px" dir="ltr">
+        <span id="demo-user"><%= demoUser %></span> · <span id="demo-pass"><%= demoPass %></span>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var btn = document.getElementById('fill-demo');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+          var form = document.querySelector('form[action="/login"]');
+          if (!form) return;
+          var u = document.getElementById('demo-user');
+          var p = document.getElementById('demo-pass');
+          if (u && p) {
+            form.querySelector('[name="username"]').value = u.textContent.trim();
+            form.querySelector('[name="password"]').value = p.textContent.trim();
+          }
+        });
+      })();
+    </script>
+    <% } %>
+
+    <div class="grid-2" style="margin-top:18px">
+      <div class="panel">
+        <h3>👛 <span data-i18n="login_wallet_t">بالمحفظة</span></h3>
+        <p class="small muted" data-i18n="login_wallet_b">
+          وقّع رسالة فقط — لا معاملة ولا رسوم. عنوانك يصبح هويتك على المنصة.
+        </p>
+        <a class="btn btn-outline btn-sm" href="/sign-in" data-i18n="sign_in_wallet">دخول بتوقيع المحفظة</a>
+      </div>
+      <div class="panel">
+        <h3>➕ <span data-i18n="login_new_t">حساب جديد</span></h3>
+        <p class="small muted" data-i18n="login_new_b">
+          أنشئ حسابًا باسم مستخدم وكلمة مرور، واربط محفظتك لاحقًا لتدير حملاتك.
+        </p>
+        <a class="btn btn-outline btn-sm" href="/register" data-i18n="create_account">إنشاء حساب</a>
+      </div>
+    </div>
+
+    <div class="alert alert-warn" style="margin-top:18px" data-i18n="login_admin_note">
+      مشرف المنصة؟ لوحة الإدارة لها دخول خاص على <a href="/admin">/admin</a> (اسم مستخدم إداري أو مفتاح أو توقيع محفظة).
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

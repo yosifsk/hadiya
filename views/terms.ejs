@@ -1,0 +1,44 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container-narrow" style="padding:34px 0 60px">
+    <h1 data-i18n="terms_title">الشروط والأحكام</h1>
+    <p class="muted small">آخر تحديث: <%= new Date().toISOString().slice(0, 10) %></p>
+
+    <div class="panel" style="margin-top:20px">
+      <h3>1. <span data-i18n="t_1">طبيعة الخدمة</span></h3>
+      <p class="small" data-i18n="t_1_b">توفّر المنصة أدوات لعرض حملات التبرّع وربطها بمدفوعات العملات الرقمية على شبكات EVM. المنصة لا تتحكّم في الأموال ولا تنفّذها نيابة عنك ولا تحتفظ بأموال المتبرّعين أو المستفيدين.</p>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3>2. <span data-i18n="t_2">الرسوم</span></h3>
+      <p class="small" data-i18n="t_2_b">رسوم المنصة <%= helpers.feeLabel() %> من كل تبرّع، تُخصم داخل معاملة واحدة على السلسلة. لا رسوم لإنشاء الحملة ولا لتحديثها. رسوم الشبكة (gas) يتحمّلها المتبرّع.</p>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3>3. <span data-i18n="t_3">عدم قابلية الاسترداد</span></h3>
+      <p class="small" data-i18n="t_3_b">مدفوعات العملات الرقمية غير قابلة للعكس. أي استرداد يتم كعملية جديدة من محفظة المنصة أو الجهة المستفيدة ولا يمكن ضمانه. يُنصح بالتحقق من العنوان والمبلغ قبل التأكيد.</p>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3>4. <span data-i18n="t_4">المحتوى والحملات</span></h3>
+      <p class="small" data-i18n="t_4_b">منشئو الحملات مسؤولون عن دقة معلوماتهم. حالة "موثّق" تعني أن فريق المنصة راجع مستندات محدّدة فقط، ولا تعني ضمان النتيجة أو التدقيق المالي. يجوز للمنصة إيقاف حملة مخالفة.</p>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3>5. <span data-i18n="t_5">التزامات المتبرّع</span></h3>
+      <p class="small" data-i18n="t_5_b">أنت مسؤول عن عنوان المحفظة الذي تقدّمه وعن رصيدك وعن المعاملات التي توقّعها. لا تتحمّل المنصة مسؤولية خسارة كلمات المرور أو الأجهزة أو التطبيقات التي لا تتحكّم فيها.</p>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3>6. <span data-i18n="t_6">الخصوصية</span></h3>
+      <p class="small" data-i18n="t_6_b">نخزّن العناوين العامة المرتبطة بتبرعاتك وسجل التبرعات لأغراض عرض سجل الحملة. التفاصيل في <a href="/privacy">سياسة الخصوصية</a>.</p>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3>7. <span data-i18n="t_7">القانون</span></h3>
+      <p class="small" data-i18n="t_7_b">تخضع هذه الشروط لقانون <%= brand.legalAddress %>. تذكّر أن استخدام عملات رقمية قد يخضع لقواعد الضرائب أو مكافحة غسل الأموال في بلدك — راجع مستشارًا مختصًا.</p>
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

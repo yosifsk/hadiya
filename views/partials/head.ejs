@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="<%= lang %>" dir="<%= lang === 'en' ? 'ltr' : 'rtl' %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %></title>
+  <meta name="description" content="<%= brand.tagline %> — منصة تبرّع بالعملات الرقمية، ٩٪ رسوم منصة و٩١٪ تصل مباشرة إلى محفظة الجهة المستفيدة.">
+  <link rel="canonical" href="<%= (typeof canonicalUrl !== 'undefined' && canonicalUrl) ? canonicalUrl : ('/' + (typeof path !== 'undefined' ? path : '')) %>">
+  <meta property="og:title" content="<%= title %>">
+  <meta property="og:description" content="<%= brand.tagline %>">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="/fonts/cairo-arabic.woff2?v=<%= assetV %>" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/cairo-latin.woff2?v=<%= assetV %>" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts/cairo.css?v=<%= assetV %>">
+  <link rel="stylesheet" href="/css/app.css?v=<%= assetV %>">
+  <link rel="icon" href="/favicon.svg?v=<%= assetV %>" type="image/svg+xml">
+  <script src="/js/theme.js?v=<%= assetV %>"></script>
+</head>
+<body>
+<a href="#main" class="btn btn-sm" style="position:absolute;inset-inline-start:8px;top:-60px;z-index:99">تخطَّ إلى المحتوى</a>

@@ -1,0 +1,71 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container-narrow" style="padding:50px 0 80px">
+    <h1 data-i18n="admin_login_title">دخول المشرف</h1>
+    <p class="muted" data-i18n="admin_login_lead">
+      اللوحة محميّة بثلاث طرق: حساب باسم مستخدم وكلمة مرور، أو مفتاح إدارة، أو توقيع محفظة موقّعة.
+    </p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-ltab="password" data-i18n="tab_account">حساب (اسم مستخدم + كلمة مرور)</button>
+      <button class="tab" data-ltab="key" data-i18n="tab_key">مفتاح الإدارة</button>
+      <button class="tab" data-ltab="wallet" data-i18n="tab_wallet">توقيع المحفظة</button>
+    </div>
+
+    <!-- ============ حساب ============ -->
+    <section class="ltab-panel" data-ltab="password">
+      <div class="panel" style="margin-top:16px">
+        <div class="field">
+          <label data-i18n="username">اسم المستخدم</label>
+          <input type="text" id="login-username" autocomplete="username" placeholder="admin">
+        </div>
+        <div class="field">
+          <label data-i18n="password">كلمة المرور</label>
+          <input type="password" id="login-password" autocomplete="current-password">
+        </div>
+        <div class="row-flex">
+          <button class="btn btn-primary" id="btn-login-account" data-i18n="sign_in">دخول</button>
+          <span id="login-account-status" class="small"></span>
+        </div>
+        <p class="small muted" style="margin-top:14px" data-i18n="login_password_note">
+          كلمة المرور تُخزَّن بـ Argon2id (٦٤ ميغابايت، ٣ تكرارات) مع salt فريد و"pepper" سري من الخادم.
+          بعد ٥ محاولات فاشلة يُقفل الحساب ١٥ دقيقة، وكل محاولة تُسجَّل في سجل التدقيق.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ مفتاح ============ -->
+    <section class="ltab-panel" data-ltab="key" hidden>
+      <div class="panel" style="margin-top:16px">
+        <div class="field">
+          <label data-i18n="admin_key">مفتاح الإدارة</label>
+          <input type="password" id="admin-key-input" autocomplete="current-password" placeholder="••••••••••••">
+          <div class="hint" data-i18n="admin_key_hint">
+            المفتاح يُقارن بمقارنة constant-time. بعد الدخول يُحفظ في كوكي HttpOnly ويُحذف من العنوان.
+          </div>
+        </div>
+        <div class="row-flex">
+          <button class="btn btn-primary" id="admin-login-btn" data-i18n="sign_in">دخول</button>
+          <span id="admin-login-status" class="small"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ محفظة ============ -->
+    <section class="ltab-panel" data-ltab="wallet" hidden>
+      <div class="panel" style="margin-top:16px">
+        <p class="small muted" data-i18n="admin_login_wallet_note">
+          سجّل الدخول بتوقيع محفظتك من <a href="/sign-in">صفحة الدخول</a> إذا كان عنوانك ضمن قائمة المشرفين.
+          التوقيع لا يكلّف أي رسوم ولا يغيّر أي رصيد.
+        </p>
+        <a class="btn btn-outline" href="/sign-in" data-i18n="sign_in">دخول بتوقيع المحفظة</a>
+      </div>
+    </section>
+
+    <div class="alert alert-warn" style="margin-top:18px" data-i18n="admin_login_security">
+      لا ترسل المفتاح أو كلمة المرور عبر رابط أو رسالة. كل محاولة دخول أو إجراء إداري يُسجَّل في سجل التدقيق.
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

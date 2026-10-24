@@ -1,0 +1,105 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container-narrow" style="padding:34px 0 60px">
+    <h1 data-i18n="register_title">أنشئ حسابك</h1>
+    <p class="muted" data-i18n="register_lead">
+      حساب باسم مستخدم وكلمة مرور. يمكنك لاحقًا ربط محفظتك ليصبح عنوانك هو مالك حملاتك على السلسلة.
+    </p>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <div class="panel" style="margin-top:18px">
+      <form method="post" action="/register">
+        <div class="field">
+          <label data-i18n="username">اسم المستخدم</label>
+          <input type="text" name="username" required minlength="3" maxlength="40" pattern="[a-z0-9._\-]{3,40}" placeholder="ahmad_2026" autocomplete="username">
+          <div class="hint" data-i18n="username_hint">حروف صغيرة وأرقام و . _ - فقط (٣ خانات على الأقل).</div>
+        </div>
+        <div class="field">
+          <label data-i18n="display_name">الاسم الظاهر (اختياري)</label>
+          <input type="text" name="display_name" maxlength="80" placeholder="أحمد">
+        </div>
+        <div class="field">
+          <div class="spread">
+            <label data-i18n="password">كلمة المرور</label>
+            <button type="button" class="btn btn-ghost btn-sm" id="gen-password" data-i18n="generate_password">توليد كلمة مرور قوية</button>
+          </div>
+          <input type="password" name="password" id="reg-password" required minlength="10" autocomplete="new-password">
+          <div class="hint" data-i18n="password_hint">١٠ خانات على الأقل. تُخزَّن بـ Argon2id — لا نحفظ كلمة المرور نفسها أبدًا.</div>
+        </div>
+        <div class="field">
+          <label data-i18n="password_confirm">تأكيد كلمة المرور</label>
+          <input type="password" name="password2" id="reg-password2" required minlength="10" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary btn-lg btn-block" type="submit" data-i18n="create_account">إنشاء الحساب</button>
+      </form>
+
+      <script>
+        (function () {
+          var gen = document.getElementById('gen-password');
+          if (!gen) return;
+          gen.addEventListener('click', function () {
+            var alphabet = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%^&*';
+            var bytes = new Uint8Array(20);
+            crypto.getRandomValues(bytes);
+            var pass = '';
+            for (var i = 0; i < bytes.length; i += 1) pass += alphabet[bytes[i] % alphabet.length];
+            var p1 = document.getElementById('reg-password');
+            var p2 = document.getElementById('reg-password2');
+            if (p1) p1.value = pass;
+            if (p2) p2.value = pass;
+          });
+        })();
+      </script>
+    </div>
+
+    <% if (typeof googleClientId !== 'undefined' && googleClientId) { %>
+      <div class="panel" style="margin-top:14px">
+        <div class="small muted" style="margin-bottom:10px" data-i18n="register_google">أو سجّل بحساب جوجل</div>
+        <div id="google-signin" style="display:flex;justify-content:center"></div>
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <script>
+          (function () {
+            function render() {
+              if (!window.google || !window.google.accounts) return;
+              window.google.accounts.id.initialize({
+                client_id: <%- JSON.stringify(googleClientId) %>,
+                callback: function (response) {
+                  fetch('/api/auth/google', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ credential: response.credential })
+                  }).then(function (r) { return r.json(); }).then(function (data) {
+                    if (data && data.ok) { location.href = '/account'; return; }
+                    var box = document.getElementById('google-error');
+                    if (box) { box.hidden = false; box.textContent = (data && data.error) || 'تعذّر تسجيل الدخول بجوجل'; }
+                  }).catch(function () {
+                    var box = document.getElementById('google-error');
+                    if (box) { box.hidden = false; box.textContent = 'تعذّر الاتصال بالخادم'; }
+                  });
+                }
+              });
+              window.google.accounts.id.renderButton(
+                document.getElementById('google-signin'),
+                { theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'filled_black' : 'outline', size: 'large', width: '320', text: 'continue_with' }
+              );
+            }
+            if (window.google && window.google.accounts) return render();
+            var t = setInterval(function () {
+              if (window.google && window.google.accounts) { clearInterval(t); render(); }
+            }, 200);
+          })();
+        </script>
+        <div class="alert alert-error" id="google-error" hidden style="margin-top:12px"></div>
+      </div>
+    <% } %>
+
+    <div class="alert alert-info" style="margin-top:18px" data-i18n="register_info">
+      لديك حساب بالفعل؟ <a href="/login">سجّل الدخول</a> — أو <a href="/sign-in">استخدم محفظتك مباشرة</a> بلا كلمة مرور.
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

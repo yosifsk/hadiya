@@ -1,0 +1,34 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container-narrow" style="padding:34px 0 60px">
+    <h1 data-i18n="faq_title">الأسئلة الشائعة</h1>
+    <p class="muted" data-i18n="faq_lead">
+      أكثر ما يسأل عنه المستخدمون — وكل جواب مبنيّ على سلوك النظام الفعلي.
+    </p>
+
+    <div class="field" style="margin-top:20px">
+      <input type="search" id="faq-search" placeholder="ابحث في الأسئلة…" autocomplete="off">
+    </div>
+
+    <div class="chip-row" id="faq-filters" style="margin-bottom:22px" data-categories="<%= JSON.stringify(faqCategories) %>"></div>
+
+    <div id="faq-list">
+      <% FAQ.forEach(item => { %>
+        <% const faqItem = (lang === 'en' && item.en) ? item.en : item; %>
+        <div class="panel" id="<%= item.id %>" data-tags="<%= item.tags.join(' ') %>" data-q="<%= faqItem.q %>" style="margin-bottom:12px">
+          <h3 style="font-size:16px;margin-top:0" data-no-i18n><%= faqItem.q %></h3>
+          <p class="small" style="margin:0" data-no-i18n><%- faqItem.a.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') %></p>
+        </div>
+      <% }); %>
+    </div>
+
+    <div class="empty" id="faq-empty" hidden data-i18n="faq_no_results">لا توجد نتائج مطابقة.</div>
+
+    <div class="alert alert-info" style="margin-top:24px" data-i18n="faq_assistant_cta">
+      لم تجد جوابك؟ اسأل المساعد الذكي في أسفل الصفحة، أو راسل الدعم على
+      <a href="mailto:<%= brand.supportEmail %>"><%= brand.supportEmail %></a>.
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

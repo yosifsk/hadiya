@@ -1,0 +1,11 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container-narrow" style="padding:60px 0 80px; text-align:center">
+    <h1>🔒</h1>
+    <p class="muted" data-i18n="forbidden">هذه الصفحة مخصّصة لمسؤول محدّد.</p>
+    <% if (typeof hint !== 'undefined' && hint) { %><p class="small muted"><%= hint %></p><% } %>
+    <a class="btn btn-primary" href="/" data-i18n="back_home">العودة للرئيسية</a>
+  </div>
+</main>
+<%- include('partials/footer') %>

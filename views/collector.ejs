@@ -1,0 +1,195 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container" style="padding:30px 0 60px">
+    <div class="spread" style="margin-bottom:22px">
+      <div>
+        <h1 style="margin:0" data-i18n="collector_title">لوحة الكولكتر</h1>
+        <p class="muted" style="margin:4px 0 0" data-i18n="collector_sub">كل ما وصل إلى المنصة والجوهات المستفيدة — من السلسلة مباشرة</p>
+      </div>
+      <div class="row-flex">
+        <span class="wallet-chip"><span class="dot on"></span><%= helpers.shortAddr(collectorAddress || '—') %></span>
+        <button class="btn btn-outline btn-sm" data-reload data-i18n="refresh">تحديث</button>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="label" data-i18n="kpi_gross">إجمالي ما وصل (كل الحملات)</div>
+        <div class="value"><%= helpers.usd(totals.grossUsd) %></div>
+        <div class="sub"><%= totals.donations %> <span data-i18n="donations_word">تبرّع مؤكد</span></div>
+      </div>
+      <div class="kpi accent">
+        <div class="label" data-i18n="kpi_fee">رسوم المنصة (متدرّجة حتى ٩٪)</div>
+        <div class="value"><%= helpers.usd(totals.feeUsd) %></div>
+        <div class="sub" data-i18n="kpi_fee_sub">محصّلة داخل معاملة التبرّع</div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="kpi_charity">صافي الجوهات المستفيدة (٩١٪)</div>
+        <div class="value"><%= helpers.usd(totals.charityUsd) %></div>
+        <div class="sub" data-i18n="kpi_charity_sub">ذهب مباشرة إلى المحافظ</div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="kpi_unsettled">رسوم غير محصّلة</div>
+        <div class="value"><%= totals.unsettledFees %></div>
+        <div class="sub" data-i18n="kpi_unsettled_sub">تبرعات مباشرة تحتاج تحصيلًا</div>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-bottom:26px">
+      <div class="panel">
+        <h3>💼 <span data-i18n="collector_wallet">محفظة الكولكتر</span></h3>
+        <div class="addr-box">
+          <span class="val"><%= collectorAddress || 'غير مضبوطة' %></span>
+          <% if (collectorAddress) { %><button class="copy-btn" data-copy="<%= collectorAddress %>">⧉</button><% } %>
+        </div>
+        <div class="small muted" style="margin-top:8px" data-i18n="collector_note">هذه هي المحفظة التي يستقبل العقد فيها حصة ٩٪. العنوان مثبّت داخل العقد ولا يمكن تغييره.</div>
+      </div>
+
+      <div class="panel">
+        <h3>⛓️ <span data-i18n="splitter_contract">عقد المقسّم</span></h3>
+        <div class="addr-box">
+          <span class="val"><%= splitterAddress || 'غير منشور بعد' %></span>
+          <% if (splitterAddress) { %><button class="copy-btn" data-copy="<%= splitterAddress %>">⧉</button><% } %>
+        </div>
+        <div class="small muted" style="margin-top:8px" data-i18n="splitter_note">منشور على: Base / Base Sepolia. نسبة الرسوم ثابتة (900 bps = ٩٪) بعد النشر.</div>
+      </div>
+
+      <div class="panel">
+        <h3>💰 <span data-i18n="live_balances">الأرصدة الحيّة</span></h3>
+        <div id="collector-balances" class="small muted" data-i18n="reading">جارٍ القراءة من السلسلة…</div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:26px">
+      <h3>📉 <span data-i18n="tiers_used">توزيع التبرعات على الشرائح</span></h3>
+      <% if (!totals.tiersUsed || !totals.tiersUsed.length) { %>
+        <p class="small muted" data-i18n="no_data">لا توجد بيانات بعد.</p>
+      <% } else { %>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="th_rate">نسبة الرسوم</th>
+                <th data-i18n="th_count">عدد التبرعات</th>
+                <th data-i18n="th_charity">يصل إلى الجهة المستفيدة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% totals.tiersUsed.forEach(t => { %>
+                <tr>
+                  <td class="mono"><%= (t.bps / 100).toFixed(t.bps % 100 === 0 ? 0 : 2) %>%</td>
+                  <td><%= t.count %></td>
+                  <td class="mono"><%= ((10000 - t.bps) / 100).toFixed(t.bps % 100 === 0 ? 0 : 2) %>%</td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+
+    <h3 style="font-size:18px" data-i18n="review_queue">قائمة المراجعة</h3>
+    <div class="table-wrap" style="margin-bottom:26px">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="th_campaign">الحملة</th>
+            <th data-i18n="th_charity_wallet">محفظة الجهة المستفيدة</th>
+            <th data-i18n="th_goal">الهدف</th>
+            <th data-i18n="th_date">التاريخ</th>
+            <th data-i18n="th_actions">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="pending-rows">
+          <tr><td colspan="5" class="muted" data-i18n="loading">جارٍ التحميل…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:18px" data-i18n="by_token">المحصّل حسب الرمز</h3>
+    <div class="table-wrap" style="margin-bottom:26px">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="th_chain">الشبكة</th>
+            <th data-i18n="th_symbol">الرمز</th>
+            <th data-i18n="th_gross">الإجمالي</th>
+            <th data-i18n="th_fee">رسوم ٩٪</th>
+            <th data-i18n="th_charity">صافي ٩١٪</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!totals.byToken.length) { %>
+            <tr><td colspan="5" class="muted" data-i18n="no_data">لا توجد بيانات بعد.</td></tr>
+          <% } %>
+          <% totals.byToken.forEach(t => { %>
+            <tr>
+              <td><%= helpers.chainName(t.chain_id) %></td>
+              <td class="mono"><%= t.token_symbol %></td>
+              <td class="mono"><%= helpers.formatRaw(t.gross, t.token_symbol, t.chain_id) %></td>
+              <td class="mono"><%= helpers.formatRaw(t.fee, t.token_symbol, t.chain_id) %></td>
+              <td class="mono"><%= helpers.formatRaw(t.charity, t.token_symbol, t.chain_id) %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:18px" data-i18n="by_campaign">حسب الحملة</h3>
+    <div class="table-wrap" style="margin-bottom:26px">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="th_campaign">الحملة</th>
+            <th data-i18n="th_raised">المحصّل</th>
+            <th data-i18n="th_donors">المتبرّعون</th>
+            <th data-i18n="th_fee">رسوم ٩٪</th>
+            <th data-i18n="th_net">صافي ٩١٪</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% campaigns.forEach(c => { %>
+            <tr>
+              <td data-no-i18n><a href="/c/<%= c.slug %>"><%= c.title %></a></td>
+              <td class="mono"><%= helpers.usd(c.raised_usd) %></td>
+              <td><%= c.donors %></td>
+              <td class="mono"><%= helpers.usd(c.fee_usd) %></td>
+              <td class="mono"><%= helpers.usd(c.charity_usd) %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-size:18px" data-i18n="ledger">دفتر المنصة</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="th_type">النوع</th>
+            <th data-i18n="th_campaign">الحملة</th>
+            <th data-i18n="th_amount">المبلغ</th>
+            <th data-i18n="th_note">ملاحظة</th>
+            <th data-i18n="th_date">التاريخ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!ledger.length) { %>
+            <tr><td colspan="5" class="muted" data-i18n="no_data">لا توجد حركات بعد.</td></tr>
+          <% } %>
+          <% ledger.forEach(l => { %>
+            <tr>
+              <td><%= l.kind === 'fee' ? 'رسوم' : l.kind %></td>
+              <td><%= l.campaign_title || '—' %></td>
+              <td class="mono"><%= helpers.formatRaw(l.amount_raw, l.token_symbol, l.chain_id) %></td>
+              <td class="small muted"><%= l.note %></td>
+              <td class="small muted"><%= helpers.dateTimeAr(l.created_at) %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

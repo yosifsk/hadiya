@@ -1,0 +1,119 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container-narrow" style="padding:34px 0 60px">
+    <h1 data-i18n="pricing_title">رسوم المنصة</h1>
+    <p class="muted" data-i18n="pricing_lead">رسوم واحدة متدرّجة على كل تبرّع، ولا رسوم لإنشاء الحملة ولا لتحديثها.</p>
+
+    <div class="grid-3" style="margin:26px 0">
+      <div class="kpi accent">
+        <div class="label" data-i18n="kpi_create_fee">رسوم إنشاء حملة</div>
+        <div class="value">$0.00</div>
+        <div class="sub" data-i18n="kpi_create_sub">بلا حدود وبدون بريد إلكتروني</div>
+      </div>
+      <div class="kpi accent">
+        <div class="label" data-i18n="kpi_update_fee">رسوم التحديثات</div>
+        <div class="value">$0.00</div>
+        <div class="sub" data-i18n="kpi_update_sub">انشر ما تشاء</div>
+      </div>
+      <div class="kpi accent">
+        <div class="label" data-i18n="kpi_tx_fee">رسوم المعاملة</div>
+        <div class="value"><%= helpers.feeLabel() %></div>
+        <div class="sub" data-i18n="kpi_tx_sub">أقصى نسبة — وتتناقص كلما زاد المبلغ</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 data-i18n="tier_title">الرسوم المتدرّجة حسب قيمة التبرّع</h3>
+      <p class="small muted" data-i18n="tier_sub">
+        كلما زاد مبلغ التبرّع انخفضت نسبة الرسوم تلقائيًا. النسبة تُطبَّق داخل العقد على السلسلة
+        ولا يستطيع المتبرّع ولا المنصة تجاوزها.
+      </p>
+      <div class="table-wrap" style="margin-top:12px">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="th_tier">الشريحة</th>
+              <th data-i18n="th_amount_range">قيمة التبرّع</th>
+              <th data-i18n="th_platform">رسوم المنصة</th>
+              <th data-i18n="th_charity">يصل إلى الجهة المستفيدة</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% brand.feeTiers.forEach((tier, index) => { %>
+              <tr>
+                <td><%= index + 1 %></td>
+                <td class="mono">
+                  <% if (index === 0) { %>
+                    حتى $<%= tier.maxUsd %>
+                  <% } else if (tier.maxUsd === Infinity) { %>
+                    فوق $<%= brand.feeTiers[index - 1].maxUsd %>
+                  <% } else { %>
+                    فوق $<%= brand.feeTiers[index - 1].maxUsd %> حتى $<%= tier.maxUsd %>
+                  <% } %>
+                </td>
+                <td class="mono"><%= (tier.bps / 100).toFixed(tier.bps % 100 === 0 ? 0 : 2) %>%</td>
+                <td class="mono"><%= ((10000 - tier.bps) / 100).toFixed(tier.bps % 100 === 0 ? 0 : 2) %>%</td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert alert-info" style="margin-top:14px" data-i18n="tier_note">
+        العتبات تُضبط داخل العقد بالوحدة الأصلية لكل رمز، وتُحدَّث دوريًا تلقائيًا حسب سعر الصرف.
+        الحد الأدنى للرسوم ٣٪ ولا يمكن سداد أقل منه.
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <h3 data-i18n="calc_title">احسبها بنفسك</h3>
+      <div class="row">
+        <div class="field">
+          <label data-i18n="calc_amount">مبلغ التبرّع (دولار)</label>
+          <input type="number" id="calc-amount" value="100" min="0" step="1">
+        </div>
+        <div class="field">
+          <label data-i18n="calc_currency">العملة</label>
+          <input type="text" value="USD" readonly>
+        </div>
+      </div>
+      <div class="fee-preview">
+        <div class="line"><span data-i18n="gross_amount">المبلغ الإجمالي</span><span id="calc-gross">$100.00</span></div>
+        <div class="line"><span data-i18n="fee_label">رسوم المنصة</span><span id="calc-fee">$9.00</span></div>
+        <div class="line total"><span data-i18n="to_charity">يصل إلى الجهة المستفيدة</span><span id="calc-net">$91.00</span></div>
+        <div class="muted" id="calc-tier"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <h3 data-i18n="compare_title">مقارنة سريعة</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="th_total">الإجمالي</th>
+              <th data-i18n="th_platform">رسوم المنصة</th>
+              <th data-i18n="th_charity">يصل إلى الجهة المستفيدة</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% [50, 100, 200, 250, 300, 350, 400, 500, 1000].forEach(v => { %>
+              <% const bps = fees.feeBpsForUsd(v); %>
+              <tr>
+                <td class="mono">$<%= v %></td>
+                <td class="mono">$<%= (v * bps / 10000).toFixed(2) %> (<%= (bps / 100).toFixed(bps % 100 === 0 ? 0 : 2) %>٪)</td>
+                <td class="mono">$<%= (v * (10000 - bps) / 10000).toFixed(2) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="alert alert-warn" style="margin-top:18px" data-i18n="pricing_warn">
+      رسوم الشبكة (gas) يدفعها المتبرّع إضافة إلى رسم المنصة، وتختلف حسب الشبكة وحالة الازدحام.
+      كما أن مدفوعات العملات الرقمية غير قابلة للاسترداد — اقرأ <a href="/terms">الشروط</a> قبل التبرّع.
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

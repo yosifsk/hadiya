@@ -1,0 +1,146 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container" style="padding:30px 0 60px">
+    <div class="spread" style="margin-bottom:22px">
+      <div>
+        <h1 style="margin:0" data-i18n="account_title">حسابي</h1>
+        <p class="muted small" style="margin:4px 0 0">
+          <% if (identity.type === 'username') { %>
+            <span data-i18n="account_identity">هويتك على المنصة</span>:
+            <span class="mono"><%= identity.username %></span>
+            <span class="badge badge-chain"><%= identity.address ? 'محفظة مرتبطة' : 'بلا محفظة' %></span>
+          <% } else { %>
+            <span data-i18n="account_identity">هويتك على المنصة</span>:
+            <span class="mono"><%= user %></span>
+            <span class="badge badge-chain">محفظة</span>
+          <% } %>
+        </p>
+      </div>
+      <div class="row-flex">
+        <a class="btn btn-primary btn-sm" href="/create" data-i18n="nav_create">ابدأ حملة</a>
+        <form method="post" action="/logout" style="display:inline">
+          <button class="btn btn-outline btn-sm" type="submit" data-i18n="logout">خروج</button>
+        </form>
+      </div>
+    </div>
+
+    <% if (identity.type === 'username' && !identity.address) { %>
+      <div class="alert alert-warn" data-i18n="account_link_required">
+        <strong>اربط محفظتك</strong> — بهذا يصبح عنوانك مالك حملاتك على السلسلة، وتستطيع وحدك
+        تغيير محفظة الجهة المستفيدة. لا تكلفة ولا معاملة: توقيع رسالة واحدة.
+      </div>
+      <div class="panel" style="margin-bottom:20px">
+        <h3 data-i18n="link_wallet_t">ربط محفظة</h3>
+        <div class="row-flex">
+          <input type="text" id="link-wallet-address" placeholder="0x…" style="max-width:420px" class="mono">
+          <button class="btn btn-primary btn-sm" id="link-wallet-btn" data-i18n="link_wallet">اربط</button>
+        </div>
+        <div id="link-wallet-status" class="small" style="margin-top:8px" data-username="<%= identity.username %>"></div>
+      </div>
+    <% } %>
+
+    <% if (identity.type === 'username' && identity.address) { %>
+      <div class="alert alert-ok" data-i18n="account_linked">
+        محفظتك مرتبطة بهذا الحساب: <span class="mono"><%= identity.address %></span> — وهي مالك حملاتك على السلسلة.
+      </div>
+    <% } %>
+
+    <div class="alert alert-info" data-i18n="account_note">
+      هذا العنوان هو حسابك: به تملك حملاتك، وبه يوقّع تغيير محفظة الجهة المستفيدة (لا يستطيع غيرك ذلك)،
+      وبه تظهر تبرعاتك. لا توجد كلمة مرور ولا بريد — فقط محفظة.
+    </div>
+
+    <div class="grid-3" style="margin:22px 0">
+      <div class="kpi accent">
+        <div class="label" data-i18n="account_campaigns">حملاتي</div>
+        <div class="value"><%= myCampaigns.length %></div>
+        <div class="sub"><%= myCampaigns.filter(c => c.status === 'active').length %> نشطة</div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="account_raised">المحصّل في حملاتي</div>
+        <div class="value"><%= helpers.usd(myRaised) %></div>
+        <div class="sub"><%= myDonations.length %> <span data-i18n="account_donations">تبرّع مني</span></div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="account_verified">الحملات الموثّقة</div>
+        <div class="value"><%= myCampaigns.filter(c => c.verification === 'verified').length %></div>
+        <div class="sub"><%= myCampaigns.filter(c => c.status === 'pending_review').length %> <span data-i18n="account_pending">بانتظار المراجعة</span></div>
+      </div>
+    </div>
+
+    <h3 style="font-size:18px" data-i18n="account_campaigns">حملاتي</h3>
+    <% if (!myCampaigns.length) { %>
+      <div class="empty" data-i18n="account_empty">
+        لا توجد حملات بعد. ابدأ أول حملة — تُرسل إلى قائمة المراجعة ثم تُنشر.
+      </div>
+    <% } else { %>
+      <div class="table-wrap" style="margin-bottom:26px">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="th_campaign">الحملة</th>
+              <th data-i18n="th_status">الحالة</th>
+              <th data-i18n="th_raised">المحصّل</th>
+              <th data-i18n="th_donors">المتبرّعون</th>
+              <th data-i18n="th_date">التاريخ</th>
+              <th data-i18n="th_actions">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% myCampaigns.forEach(c => { %>
+              <tr>
+                <td data-no-i18n><a href="/c/<%= c.slug %>"><%= c.title %></a></td>
+                <td>
+                  <% if (c.status === 'active') { %><span class="badge badge-confirmed">نشطة</span>
+                  <% } else if (c.status === 'pending_review') { %><span class="badge badge-pending">بانتظار المراجعة</span>
+                  <% } else if (c.status === 'rejected') { %><span class="badge badge-failed">مرفوضة</span>
+                  <% } else { %><span class="badge badge-self"><%= c.status %></span><% } %>
+                </td>
+                <td class="mono"><%= helpers.usd(c.raised_usd) %></td>
+                <td><%= c.donors %></td>
+                <td class="small muted"><%= helpers.dateAr(c.created_at) %></td>
+                <td><a class="btn btn-outline btn-sm" href="/campaigns/<%= c.slug %>/dashboard" data-i18n="open_dashboard">لوحة الحملة</a></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+
+    <h3 style="font-size:18px" data-i18n="account_donations">تبرّعاتي</h3>
+    <% if (!myDonations.length) { %>
+      <div class="empty" data-i18n="account_no_donations">لم تتبرّع بعد عبر هذه المنصة.</div>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="th_campaign">الحملة</th>
+              <th data-i18n="th_amount">المبلغ</th>
+              <th data-i18n="th_status">الحالة</th>
+              <th data-i18n="th_tx">المعاملة</th>
+              <th data-i18n="th_date">التاريخ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% myDonations.forEach(d => { %>
+              <tr>
+                <td><a href="/c/<%= d.slug %>"><%= d.campaign_title %></a></td>
+                <td class="mono"><%= helpers.formatRaw(d.amount_raw, d.token_symbol, d.chain_id) %></td>
+                <td>
+                  <% if (d.status === 'confirmed') { %><span class="badge badge-confirmed">مؤكد</span>
+                  <% } else if (d.status === 'pending') { %><span class="badge badge-pending">بانتظار التأكيد</span>
+                  <% } else { %><span class="badge badge-failed">فشل</span><% } %>
+                </td>
+                <td class="mono"><a href="<%= helpers.explorerTx(d.chain_id, d.tx_hash) %>" target="_blank" rel="noopener"><%= helpers.shortAddr(d.tx_hash) %></a></td>
+                <td class="small muted"><%= helpers.dateTimeAr(d.confirmed_at || d.created_at) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</main>
+<%- include('partials/footer') %>

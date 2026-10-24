@@ -1,0 +1,380 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container campaign-grid">
+    <!-- ================= العمود الأيمن: المحتوى ================= -->
+    <div>
+      <div class="campaign-cover">
+        <% if (campaign.cover_url) { %><img src="<%= campaign.cover_url %>" alt="<%= campaign.title %>"><% } %>
+      </div>
+
+      <% if (campaign.status === 'pending_review') { %>
+        <div class="alert alert-warn" data-i18n="pending_review_banner">
+          هذه الحملة قيد المراجعة ولم تُنشر بعد للعامة. تظهر للمتابعين الموقّعين فقط.
+        </div>
+      <% } else if (campaign.status === 'awaiting_signature') { %>
+        <div class="alert alert-warn" id="awaiting-signature">
+          <% if (needsSignature) { %>
+            <p data-i18n="awaiting_signature_owner">
+              تمت مراجعة حملتك ووافق عليها فريق المراجعة. بقي خطوة أخيرة: ضع محفظة منظّم الحملة ووقّع بالعنوان نفسه لإتمام النشر.
+            </p>
+            <button type="button" class="btn btn-primary btn-sm" id="sign-campaign" data-slug="<%= campaign.slug %>" data-i18n="sign_now">توقيع وإرسال للمراجعة</button>
+            <span class="small muted" id="sign-campaign-status" role="status" aria-live="polite" style="margin-inline-start:8px"></span>
+          <% } else { %>
+            <p data-i18n="awaiting_signature_others">
+              تمت مراجعة هذه الحملة ووافق عليها الفريق، وهي بانتظار توقيع منظّم الحملة لإتمام النشر.
+            </p>
+          <% } %>
+        </div>
+      <% } else if (campaign.status === 'rejected') { %>
+        <div class="alert alert-error" data-i18n="rejected_banner">رُفضت هذه الحملة من قبل فريق المراجعة.</div>
+      <% } else if (campaign.status === 'closed') { %>
+        <div class="alert alert-info" data-i18n="closed_banner">أُغلقت هذه الحملة — لم تعد تقبل تبرعات.</div>
+      <% } %>
+
+      <div class="chip-row" style="margin-bottom:12px">
+        <span class="chip static"><%= helpers.categoryLabel(campaign.category) %></span>
+        <span class="badge badge-chain"><%= helpers.chainName(campaign.chain_id) %> · <%= campaign.token_symbol %></span>
+        <% if (campaign.verification === 'verified') { %>
+          <span class="badge badge-verified">✔ <span data-i18n="verified">موثّقة</span></span>
+        <% } else { %>
+          <span class="badge badge-self" title="لم تُراجع جهة المستفيدة بعد"><span data-i18n="self_declared">مصرّح به ذاتيًا</span></span>
+        <% } %>
+        <% if (campaign.status !== 'active') { %>
+          <span class="badge badge-pending"><%= campaign.status === 'paused' ? 'موقوفة مؤقتًا' : 'مغلقة' %></span>
+        <% } %>
+      </div>
+
+      <h1 class="campaign-title" data-no-i18n><%= helpers.localizedCampaign(campaign).title %></h1>
+      <% if (helpers.localizedCampaign(campaign).subtitle) { %><p class="campaign-sub" data-no-i18n><%= helpers.localizedCampaign(campaign).subtitle %></p><% } %>
+
+      <div class="organizer">
+        <div class="avatar"><%= (campaign.organizer_name || '?').trim().charAt(0) %></div>
+        <div>
+          <div class="name" data-no-i18n><%= campaign.organizer_name || 'منظّم الحملة' %></div>
+          <div class="role">
+            <span data-i18n="organized_by">ينظّم الحملة</span>
+            · <span class="mono"><%= helpers.shortAddr(campaign.organizer_wallet || campaign.charity_wallet) %></span>
+            <% if (campaign.country) { %> · <%= campaign.country %><% } %>
+          </div>
+        </div>
+        <% if (owner) { %>
+          <a class="btn btn-outline btn-sm" href="/campaigns/<%= campaign.slug %>/dashboard" style="margin-inline-start:auto" data-i18n="open_dashboard">لوحة الحملة</a>
+        <% } %>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="story" data-i18n="tab_story">القصة</button>
+        <button class="tab" data-tab="updates" data-i18n="tab_updates">التحديثات <%= updates.length %></button>
+        <button class="tab" data-tab="comments" data-i18n="tab_comments">التعليقات <%= comments.length %></button>
+        <button class="tab" data-tab="transparency" data-i18n="tab_transparency">الشفافية</button>
+      </div>
+
+      <!-- القصة -->
+      <section class="tab-panel" data-panel="story">
+        <div class="story" data-no-i18n><%= helpers.localizedCampaign(campaign).story %></div>
+        <% if (campaign.story_cid) { %>
+          <div class="alert alert-info" style="margin-top:20px">
+            <span data-i18n="ipfs_note">نسخة من هذه القصة محفوظة على IPFS — يمكن قراءتها حتى لو تغيّر الموقع:</span>
+            <a href="<%= helpers.ipfsUrl(campaign.story_cid) %>" target="_blank" rel="noopener" class="mono"><%= campaign.story_cid %></a> ↗
+          </div>
+        <% } %>
+      </section>
+
+      <!-- التحديثات -->
+      <section class="tab-panel" data-panel="updates" hidden>
+        <% if (!updates.length) { %>
+          <div class="empty" data-i18n="no_updates">لا توجد تحديثات بعد.</div>
+        <% } else { %>
+          <div class="timeline">
+            <% updates.forEach(u => { %>
+              <div class="timeline-item">
+                <div class="t"><%= helpers.dateTimeAr(u.created_at) %></div>
+                <% if (u.title) { %><div class="b" data-no-i18n><strong><%= u.title %></strong></div><% } %>
+                <div class="b" data-no-i18n><%= u.body %></div>
+              </div>
+            <% }); %>
+          </div>
+        <% } %>
+      </section>
+
+      <!-- التعليقات -->
+      <section class="tab-panel" data-panel="comments" hidden>
+        <form id="comment-form" class="panel" style="margin-bottom:18px">
+          <textarea name="body" placeholder="اكتب تعليقًا داعمًا…" required maxlength="1000"></textarea>
+          <div class="row-flex" style="margin-top:10px">
+            <input type="text" name="author_name" placeholder="اسمك (اختياري)" style="width:200px">
+            <button class="btn btn-primary btn-sm" type="submit" data-i18n="post_comment">نشر</button>
+            <span id="comment-status" class="small muted"></span>
+          </div>
+        </form>
+        <% if (!comments.length) { %>
+          <div class="empty" data-i18n="no_comments">لا توجد تعليقات بعد — كن أول الداعمين.</div>
+        <% } else { %>
+          <% comments.forEach(c => { %>
+            <div class="panel" style="margin-bottom:10px;padding:14px">
+              <div class="spread" style="margin-bottom:4px">
+                <strong class="small"><%= c.author_name || helpers.shortAddr(c.author_wallet) %></strong>
+                <span class="small muted"><%= helpers.relativeAr(c.created_at) %></span>
+              </div>
+              <div class="small"><%= c.body %></div>
+            </div>
+          <% }); %>
+        <% } %>
+      </section>
+
+      <!-- الشفافية -->
+      <section class="tab-panel" data-panel="transparency" hidden>
+        <div class="panel">
+          <h3>🔍 <span data-i18n="transparency_t">أين تذهب أموالك</span></h3>
+          <ul class="trust-list">
+            <li><span class="ok">✔</span><span data-i18n="transparency_1">كل تبرّع يمرّ بمعاملة واحدة على الشبكة؛ ولا يمرّ أي مبلغ في حساب المنصة.</span></li>
+            <li><span class="ok">✔</span><span data-i18n="transparency_2">رسوم المنصة ٩٪ تُثبَّت داخل العقد ولا يمكن تغييرها بعد النشر.</span></li>
+            <li><span class="ok">✔</span><span data-i18n="transparency_3">قيمة المنصة محفوظة في متغيّر <span class="mono">immutable</span> داخل العقد.</span></li>
+            <li><span class="ok">✔</span><span data-i18n="transparency_4">كل تبرّع يولّد حدثًا علنيًا يمكن لأي شخص مراجعته على المستكشف.</span></li>
+          </ul>
+
+          <div class="divider"></div>
+
+          <div class="stack">
+            <div>
+              <div class="small muted" data-i18n="lbl_charity_wallet">محفظة الجهة المستفيدة (تستقبل ٩١٪)</div>
+              <div class="addr-box">
+                <span class="val"><%= campaign.charity_wallet %></span>
+                <button class="copy-btn" data-copy="<%= campaign.charity_wallet %>" title="نسخ">⧉</button>
+              </div>
+              <div class="small muted" style="margin-top:4px">
+                <a href="<%= helpers.explorerAddr(campaign.chain_id, campaign.charity_wallet) %>" target="_blank" rel="noopener"><span data-i18n="view_on_explorer">عرض على المستكشف</span> ↗</a>
+              </div>
+            </div>
+
+            <div>
+              <div class="small muted" data-i18n="lbl_collector_wallet">محفظة الكولكتر (تستقبل ٩٪)</div>
+              <div class="addr-box">
+                <span class="val"><%= collectorAddress || '—' %></span>
+                <% if (collectorAddress) { %>
+                  <button class="copy-btn" data-copy="<%= collectorAddress %>" title="نسخ">⧉</button>
+                <% } %>
+              </div>
+            </div>
+
+            <% if (campaign.splitter_address) { %>
+              <div>
+                <div class="small muted" data-i18n="lbl_splitter">عقد المقسّم (DonationSplitter)</div>
+                <div class="addr-box">
+                  <span class="val"><%= campaign.splitter_address %></span>
+                  <button class="copy-btn" data-copy="<%= campaign.splitter_address %>" title="نسخ">⧉</button>
+                </div>
+                <div class="small muted" style="margin-top:4px">
+                  <span data-i18n="splitter_campaign_id">رقم الحملة داخل العقد</span>: <%= campaign.splitter_campaign_id %>
+                  <% if (splitterInfo) { %>
+                    · <span data-i18n="fee_onchain">رسوم العقد على السلسلة</span>: <%= (splitterInfo.feeBps / 100).toFixed(2) %>%
+                    · <span data-i18n="collector_onchain">محفظة الكولكتر في العقد</span>: <span class="mono"><%= helpers.shortAddr(splitterInfo.collector) %></span>
+                  <% } %>
+                </div>
+              </div>
+            <% } %>
+
+            <div>
+              <div class="small muted" data-i18n="lbl_wallet_balance">الرصيد الفعلي في محفظة الجهة المستفيدة</div>
+              <div class="row-flex" style="margin-top:6px">
+                <span class="badge badge-chain" id="live-balance" data-chain="<%= campaign.chain_id %>" data-address="<%= campaign.charity_wallet %>" data-token="<%= campaign.token_symbol %>">
+                  <%= charityBalance ? helpers.formatRaw(charityBalance.raw, campaign.token_symbol, campaign.chain_id) : 'جارٍ القراءة…' %>
+                </span>
+                <span class="small muted" data-i18n="balance_note">الرصيد لا يعزل تبرعات هذه الحملة عن أرصدة سابقة — راجع سجل التبرعات أدناه.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <h3 style="font-size:18px" data-i18n="recent_donations">آخر التبرعات</h3>
+      <% if (!donations.length) { %>
+        <div class="empty" data-i18n="no_donations">لا توجد تبرعات مؤكدة بعد. كن أول الداعمين.</div>
+      <% } else { %>
+        <div class="panel">
+          <% donations.forEach(d => { %>
+            <div class="donor-row">
+              <div class="avatar" style="width:34px;height:34px;font-size:13px"><%= d.is_anonymous ? '؟' : (d.donor_name || '₿').trim().charAt(0) %></div>
+              <div>
+                <div class="who"><%= d.is_anonymous ? 'داعم مجهول' : (d.donor_name || helpers.shortAddr(d.donor_address)) %></div>
+                <div class="meta">
+                  <%= helpers.relativeAr(d.confirmed_at || d.created_at) %>
+                  · <%= d.token_symbol %>
+                  <% if (d.message) { %> · <%= d.message %><% } %>
+                </div>
+              </div>
+              <div class="amt">
+                <%= helpers.formatRaw(d.amount_raw, d.token_symbol, d.chain_id) %>
+                <div class="meta" style="text-align:end"><%= helpers.usd(d.usd_value) %></div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- ================= العمود الجانبي ================= -->
+    <aside class="side-panel">
+      <div class="panel">
+        <div class="raised"><%= totals.totalUsd > 0 ? helpers.usd(totals.totalUsd) : (donations.length ? '—' : helpers.usd(0)) %></div>
+        <div class="raised-note">
+          <% if (totals.totalUsd <= 0 && donations.length) { %>
+            <span data-i18n="price_unavailable">السعر بالدولار غير متاح الآن — راجع المبالغ الأصلية بالأسفل</span>
+          <% } else { %>
+            <span data-i18n="raised_of">مجمّع من</span> <%= helpers.usd(campaign.goal_usd) %> ·
+            <%= totals.donorCount %> <span data-i18n="donations_word">تبرّع</span>
+          <% } %>
+        </div>
+        <div class="progress <%= campaign.accent || 'emerald' %>" style="margin-bottom:10px"><i style="width:<%= progress.toFixed(1) %>%"></i></div>
+        <div class="amounts">
+          <span><strong><%= Math.round(progress) %>%</strong> <span data-i18n="funded">مموّل</span></span>
+          <span class="muted"><%= helpers.usdShort(campaign.goal_usd) %> <span data-i18n="goal">الهدف</span></span>
+        </div>
+
+        <% if (campaign.status === 'active') { %>
+          <button class="btn btn-primary btn-block btn-lg" style="margin-top:16px" data-open-donate data-i18n="donate_now">تبرّع الآن</button>
+        <% } else if (campaign.status === 'pending_review') { %>
+          <button class="btn btn-outline btn-block btn-lg" style="margin-top:16px" disabled data-i18n="donate_pending">بانتظار المراجعة</button>
+        <% } else if (campaign.status === 'closed' || campaign.status === 'rejected') { %>
+          <button class="btn btn-outline btn-block btn-lg" style="margin-top:16px" disabled data-i18n="donate_closed">الحملة مغلقة</button>
+        <% } %>
+
+        <div class="fee-preview">
+          <div class="line"><span data-i18n="fee_label">رسوم المنصة (أقصى نسبة)</span><span class="fee"><%= helpers.feeLabel() %></span></div>
+          <div class="line"><span data-i18n="tier_note">الرسوم متدرّجة تنخفض مع زيادة المبلغ</span><span>٩٪ ← ٧٪ ← ٥٪ ← ٣٪</span></div>
+          <div class="muted" data-i18n="fee_note">تُخصم داخل نفس المعاملة على السلسلة — لا تُدفع من حسابك لاحقًا.</div>
+          <div class="muted" data-i18n="tier_units_note">
+            حدود الشرائح محفوظة داخل العقد بوحدة الرمز وقت ضبطها؛ فهي مطابقة للدولار مع USDC،
+            وقيمتها بالدولار قد تنزلق مع تغيّر سعر الأصول المتقلّبة (يُعاد ضبطها دوريًا).
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>💸 <span data-i18n="supported_tokens">الرموز المدعومة</span></h3>
+        <div class="chip-row">
+          <% tokens.forEach(t => { %>
+            <span class="chip static"><%= t.symbol %> · <%= helpers.chainName(campaign.chain_id) %></span>
+          <% }); %>
+        </div>
+        <p class="small muted" style="margin-top:10px" data-i18n="tokens_note">
+          يتم الدفع على شبكة <%= helpers.chainName(campaign.chain_id) %> وتُحوَّل مباشرة إلى محفظة الجهة المستفيدة.
+        </p>
+      </div>
+
+      <div class="panel">
+        <h3>🧾 <span data-i18n="campaign_facts">معلومات الحملة</span></h3>
+        <ul class="trust-list">
+          <li><span class="ok">•</span><span><span data-i18n="created_at">أُنشئت</span>: <%= helpers.dateAr(campaign.created_at) %></span></li>
+          <li><span class="ok">•</span><span><span data-i18n="goal_value">الهدف</span>: <%= helpers.usd(campaign.goal_usd) %></span></li>
+          <li><span class="ok">•</span><span><span data-i18n="donations_count">عدد التبرعات</span>: <%= totals.donorCount %></span></li>
+          <li><span class="ok">•</span><span><span data-i18n="network">الشبكة</span>: <%= helpers.chainName(campaign.chain_id) %></span></li>
+          <li><span class="ok">•</span><span><span data-i18n="settlement_method">طريقة التحويل</span>: <%= campaign.splitter_address ? 'عقد ذكي (ذري)' : 'تحويل مباشر للمحفظة' %></span></li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h3>🔗 <span data-i18n="share">مشاركة</span></h3>
+        <div class="row-flex">
+          <button class="btn btn-outline btn-sm" data-copy="<%= campaign.title %> — <%= helpers.explorerBase(campaign.chain_id) %>" data-i18n="copy_link">نسخ الرابط</button>
+          <button class="btn btn-outline btn-sm" data-copy-page data-i18n="copy_url">نسخ رابط الصفحة</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- ================= نافذة التبرّع ================= -->
+<div class="modal" id="donate-modal">
+  <div class="modal-backdrop" data-close-donate></div>
+  <div class="modal-box">
+    <button class="modal-close" data-close-donate>✕</button>
+    <h2 data-i18n="donate_title">تبرّع بالحملة</h2>
+    <p class="muted small" data-no-i18n><%= helpers.localizedCampaign(campaign).title %></p>
+
+    <div id="donate-flow"
+         data-slug="<%= campaign.slug %>"
+         data-chain="<%= campaign.chain_id %>"
+         data-token="<%= campaign.token_symbol %>"
+         data-charity="<%= campaign.charity_wallet %>"
+         data-splitter="<%= campaign.splitter_address %>"
+         data-splitter-id="<%= campaign.splitter_campaign_id || '' %>"
+         data-fee-bps="<%= brand.platformFeeBps %>"
+         data-explorer="<%= helpers.explorerBase(campaign.chain_id) %>">
+
+      <% if (typeof impactLevels !== 'undefined' && impactLevels.length) { %>
+      <div class="field" style="margin-top:14px">
+        <label data-i18n="impact_title">مستويات الأثر</label>
+        <div class="impact-grid" id="impact-grid">
+          <% impactLevels.forEach((lvl) => { %>
+            <% const lvlLabel = (lang === 'en' && lvl.label_en) ? lvl.label_en : lvl.label; %>
+            <button type="button" class="impact-card" data-amount="<%= lvl.amount_usd %>" data-no-i18n>
+              <span class="impact-amount"><%= helpers.usd(lvl.amount_usd) %></span>
+              <span class="impact-label"><%= lvlLabel %></span>
+              <span class="impact-fee" data-fee-for="<%= lvl.amount_usd %>"></span>
+            </button>
+          <% }); %>
+        </div>
+      </div>
+      <% } %>
+
+      <div class="field" style="margin-top:14px">
+        <label data-i18n="choose_amount">اختر المبلغ</label>
+        <div class="amount-grid">
+          <button type="button" class="amount-opt" data-amount="10">10</button>
+          <button type="button" class="amount-opt" data-amount="25">25</button>
+          <button type="button" class="amount-opt" data-amount="50">50</button>
+          <button type="button" class="amount-opt" data-amount="100">100</button>
+        </div>
+        <input type="number" id="donate-amount" min="0.01" step="0.01" placeholder="مبلغ آخر" value="25">
+      </div>
+
+      <div class="field">
+        <label data-i18n="choose_token">العملة</label>
+        <div class="token-grid" id="token-grid">
+          <% tokens.forEach(t => { %>
+            <button type="button" class="token-opt <%= t.symbol === campaign.token_symbol ? 'active' : '' %>"
+                    data-symbol="<%= t.symbol %>" data-address="<%= t.address || '' %>" data-native="<%= t.isNative ? '1' : '0' %>" data-decimals="<%= t.decimals %>">
+              <div class="sym"><%= t.symbol %></div>
+              <div class="chain"><%= helpers.chainName(campaign.chain_id) %></div>
+            </button>
+          <% }); %>
+        </div>
+      </div>
+
+      <div class="fee-preview" id="fee-preview">
+        <div class="line"><span data-i18n="gross_amount">المبلغ الإجمالي</span><span id="fp-gross">—</span></div>
+        <div class="line"><span data-i18n="fee_label">رسوم المنصة (٩٪)</span><span id="fp-fee">—</span></div>
+        <div class="line"><span data-i18n="to_charity">يصل إلى الجهة المستفيدة</span><span id="fp-charity">—</span></div>
+        <div class="line total"><span data-i18n="arrives_wallet">يصل إلى المحفظة</span><span id="fp-wallet" class="mono">—</span></div>
+        <div class="muted" id="fp-usd">—</div>
+        <div class="muted" id="fp-tier" style="margin-top:6px"></div>
+      </div>
+
+      <div class="field" style="margin-top:14px">
+        <label data-i18n="your_name">اسمك (يظهر للداعمين)</label>
+        <input type="text" id="donate-name" maxlength="80" placeholder="اختياري">
+      </div>
+      <div class="field">
+        <label data-i18n="message_optional">رسالة للمطمئنين (اختياري)</label>
+        <input type="text" id="donate-message" maxlength="200" placeholder="لا تترك بيانات حساسة">
+      </div>
+      <label class="row-flex small" style="gap:8px;margin-bottom:12px">
+        <input type="checkbox" id="donate-anonymous" style="width:auto">
+        <span data-i18n="hide_name">أخفِ اسمي (يظهر "داعم مجهول")</span>
+      </label>
+
+      <button class="btn btn-primary btn-block btn-lg" id="donate-submit" data-i18n="pay_now">ادفع الآن</button>
+      <p class="small muted" style="margin-top:10px" data-i18n="crypto_warning">
+        ⚠️ مدفوعات العملات الرقمية غير قابلة للاسترداد. تحقّق من العنوان والمبلغ قبل التأكيد.
+      </p>
+      <div id="donate-status" class="small" style="margin-top:10px"></div>
+    </div>
+
+    <div id="donate-result" hidden></div>
+  </div>
+</div>
+<%- include('partials/footer') %>

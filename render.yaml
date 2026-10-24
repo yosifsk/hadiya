@@ -1,0 +1,59 @@
+# ============================================================
+#  HADIYA — Render Blueprint
+#  الاستخدام: مستودع GitHub → Render → New → Blueprint → اختر هذا المستودع
+# Render يقرأ هذا الملف ويجهّز كل شيء (بما فيه القرص الدائم والمفاتيح).
+# ============================================================
+
+services:
+  - type: web
+    name: hadiya
+    runtime: docker
+    plan: starter            # القرص الدائم يتطلب خطة مدفوعة (starter)
+    region: frankfurt        # أقرب منطقة للمستخدمين
+    healthCheckPath: /api/health
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # Render يقرأ PORT تلقائيًا — الخادم يقرأه من process.env
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATA_DIR
+        value: /var/data
+      - key: DB_FILE
+        value: /var/data/hadba.sqlite
+      # ⚠️ استبدل القيم قبل النشر (استخدم: node scripts/render-prep.js)
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: PASSWORD_PEPPER
+        generateValue: true
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_MUST_CHANGE
+        value: "1"
+      - key: COLLECTOR_ADDRESS
+        sync: false
+      - key: OWNER_ADDRESS
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: CHAIN_ID
+        value: "8453"
+      # مفاتيح RPC (اختيارية — هناك قيم افتراضية عامة)
+      - key: RPC_BASE
+        sync: false
+      - key: RPC_ETHEREUM
+        sync: false
+      - key: RPC_BSC
+        sync: false
+      - key: RPC_POLYGON
+        sync: false
+      - key: RPC_TRON
+        sync: false
+    disk:
+      name: hadiya-data
+      mountPath: /var/data
+      sizeGB: 1

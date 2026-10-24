@@ -1,0 +1,187 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container-narrow" style="padding:34px 0 60px">
+    <h1 data-i18n="create_title">ابدأ حملة تبرّع</h1>
+    <p class="muted" data-i18n="create_lead">
+      لا تحتاج محفظة من طرفنا — المال يذهب من محفظة المتبرّع مباشرة إلى محفظة الجهة المستفيدة.
+      ستحتاج عنوان محفظة الجهة المستفيدة حتى يصلك المال.
+    </p>
+
+    <% if (typeof user !== 'undefined' && user) { %>
+      <div class="alert alert-ok" data-i18n="create_owner">
+        منظّم الحملة (مالكها على السلسلة): <span class="mono"><%= user %></span>
+        — بهذا العنوان وحده تستطيع لاحقًا تغيير محفظة الجهة المستفيدة.
+      </div>
+    <% } %>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <form method="post" action="/create" class="panel">
+      <div class="field">
+        <label data-i18n="f_title">عنوان الحملة</label>
+        <input type="text" name="title" required minlength="4" maxlength="140" value="<%= (typeof values !== 'undefined' && values.title) || '' %>">
+      </div>
+      <div class="field">
+        <label data-i18n="f_subtitle">سطر واحد يشرح الحالة</label>
+        <input type="text" name="subtitle" maxlength="200" value="<%= (typeof values !== 'undefined' && values.subtitle) || '' %>">
+      </div>
+      <div class="field">
+        <label data-i18n="f_story">القصة</label>
+        <textarea name="story" maxlength="8000" placeholder="اشرح الحاجة، من سيستفيد، وكيف سيُصرف المبلغ." id="story-field"><%= (typeof values !== 'undefined' && values.story) || '' %></textarea>
+        <div class="hint" data-i18n="f_story_hint">الوصف نصّي فقط: لا يمكن وضع أي عنوان محفظة (0x…) في العنوان أو السطر أو القصة. عنوان المحفظة يُكتب في خانتها أدناه.</div>
+        <div class="alert alert-error" id="wallet-warning" hidden></div>
+      </div>
+
+      <details class="panel" style="margin-bottom:16px">
+        <summary style="cursor:pointer;font-weight:700" data-i18n="f_en_title">نسخة إنجليزية (اختياري)</summary>
+        <p class="small muted" style="margin-top:8px" data-i18n="f_en_note">
+          تظهر للزوار الذين يختارون لغة الواجهة الإنجليزية. إن تُركت فارغة تُعرض النسخة العربية.
+        </p>
+        <div class="field">
+          <label data-i18n="f_en_title_label">العنوان بالإنجليزية</label>
+          <input type="text" name="title_en" maxlength="140" value="<%= (typeof values !== 'undefined' && values.title_en) || '' %>">
+        </div>
+        <div class="field">
+          <label data-i18n="f_en_sub">السطر الوصفي بالإنجليزية</label>
+          <input type="text" name="subtitle_en" maxlength="200" value="<%= (typeof values !== 'undefined' && values.subtitle_en) || '' %>">
+        </div>
+        <div class="field">
+          <label data-i18n="f_en_story">القصة بالإنجليزية</label>
+          <textarea name="story_en" maxlength="8000"><%= (typeof values !== 'undefined' && values.story_en) || '' %></textarea>
+        </div>
+      </details>
+
+      <div class="row">
+        <div class="field">
+          <label data-i18n="f_goal">الهدف بالدولار</label>
+          <input type="number" name="goal_usd" min="0" step="1" value="<%= (typeof values !== 'undefined' && values.goal_usd) || 5000 %>">
+        </div>
+        <div class="field">
+          <label data-i18n="f_category">الفئة</label>
+          <select name="category">
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat.key %>" <%= (typeof values !== 'undefined' && values.category === cat.key) ? 'selected' : '' %>><%= cat.label %></option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label data-i18n="f_chain">الشبكة</label>
+          <select name="chain_id">
+            <% chains.forEach(c => { %>
+              <option value="<%= c.id %>" data-family="<%= c.addressFamily %>" data-tokens="<%= (c.tokens || []).join(',') %>" <%= (typeof values !== 'undefined' && Number(values.chain_id) === c.id) ? 'selected' : '' %>><%= c.name %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="f_token">الرمز المفضّل</label>
+          <select name="token_symbol" id="token-select">
+            <option value="USDC">USDC</option>
+            <option value="ETH">ETH</option>
+            <option value="USDT">USDT</option>
+            <option value="POL">POL</option>
+            <option value="TRX">TRX</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="f_charity">محفظة الجهة المستفيدة</label>
+        <input type="text" name="charity_wallet" required placeholder="0x… / T…" value="<%= (typeof values !== 'undefined' && values.charity_wallet) || '' %>" autocomplete="off" spellcheck="false">
+        <div class="hint" data-i18n="f_charity_hint">العنوان الذي تصل إليه مبالغ التبرّع. يجب أن يطابق شبكة الحملة: عنوان EVM يبدأ بـ 0x، وعنوان TRON يبدأ بحرف T.</div>
+        <div class="hint" id="wallet-network-hint" role="status" aria-live="polite" hidden></div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="f_delivery">عنوان الاستلام</label>
+        <input type="text" name="delivery_address" id="delivery-address" placeholder="0x… / T…" value="<%= (typeof values !== 'undefined' && values.delivery_address) || '' %>" autocomplete="off" spellcheck="false">
+        <input type="hidden" name="delivery_message" id="delivery-message">
+        <input type="hidden" name="delivery_signature" id="delivery-signature">
+        <div class="row-flex" style="margin-top:8px;gap:8px">
+          <button type="button" class="btn btn-outline btn-sm" id="sign-delivery" data-i18n="f_delivery_sign">توقيع وإثبات العنوان</button>
+          <span class="small muted" id="delivery-status" role="status" aria-live="polite"></span>
+        </div>
+        <div class="hint" data-i18n="f_delivery_hint">العنوان الذي سيصل إليه التبرّع فعليًا (عنوان المستلم أو الجهة المنفّذة). نطلب توقيعًا واحدًا من محفظتك لإثبات ملكيته — بلا توقيع لا يُقبل.</div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="f_organizer_wallet">محفظة المنظّم (إثبات الملكية)</label>
+        <input type="text" name="organizer_address" id="organizer-address" placeholder="0x… / T…" value="<%= (typeof values !== 'undefined' && values.organizer_address) || '' %>" autocomplete="off" spellcheck="false">
+        <input type="hidden" name="organizer_message" id="organizer-message">
+        <input type="hidden" name="organizer_signature" id="organizer-signature">
+        <div class="row-flex" style="margin-top:8px;gap:8px">
+          <button type="button" class="btn btn-outline btn-sm" id="sign-organizer" data-i18n="f_organizer_sign">توقيع وإثبات الملكية</button>
+          <span class="small muted" id="organizer-status" role="status" aria-live="polite"></span>
+        </div>
+        <div class="hint" data-i18n="f_organizer_hint">محفظة المنظّم: وقّع بالعنوان نفسه عند الحفظ. إن لم توقّع الآن، ستُراجع حملتك أولًا ثم نطلب منك التوقيع لإتمام النشر.</div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="f_impact">مستويات الأثر</label>
+        <div class="hint" data-i18n="f_impact_hint">
+          اربط كل مبلغ بنتيجة ملموسة («٢٥$ تكفي شهر دواء لمريض»). تظهر هذه البطاقات للزوار،
+          والضغط عليها يحدّد مبلغ التبرّع تلقائيًا.
+        </div>
+        <div id="impact-levels" class="impact-editor">
+          <% const impactValues = (typeof values !== 'undefined' && values.impact_levels) ? values.impact_levels : []; %>
+          <% impactValues.forEach((lvl, i) => { %>
+            <div class="impact-row" data-index="<%= i %>">
+              <input type="number" name="impact_amount_<%= i %>" min="1" step="1" placeholder="25" value="<%= lvl.amount_usd %>" aria-label="مبلغ مستوى الأثر بالدولار">
+              <input type="text" name="impact_label_<%= i %>" maxlength="200" placeholder="مثال: تكفي شهر دواء لمريض واحد" value="<%= lvl.label %>">
+              <input type="text" name="impact_label_en_<%= i %>" maxlength="200" placeholder="EN: covers one month of medicine" value="<%= lvl.label_en || '' %>">
+              <button type="button" class="btn btn-ghost btn-sm impact-remove" data-i18n="remove">✕</button>
+            </div>
+          <% }); %>
+        </div>
+        <div class="row-flex" style="margin-top:8px;gap:8px">
+          <button type="button" class="btn btn-outline btn-sm" id="impact-add" data-i18n="f_impact_add">+ إضافة مستوى</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="impact-suggest" data-i18n="f_impact_suggest">اقترح من شرائح الرسوم</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label data-i18n="f_org">اسم المنظّم</label>
+          <input type="text" name="organizer_name" maxlength="120" value="<%= (typeof values !== 'undefined' && values.organizer_name) || '' %>">
+        </div>
+        <div class="field">
+          <label data-i18n="f_country">الدولة</label>
+          <input type="text" name="country" maxlength="60" value="<%= (typeof values !== 'undefined' && values.country) || '' %>">
+        </div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="f_cover">رابط صورة الغلاف (اختياري)</label>
+        <input type="text" name="cover_url" maxlength="500" placeholder="https://…" value="<%= (typeof values !== 'undefined' && values.cover_url) || '' %>">
+      </div>
+
+      <div class="field">
+        <label data-i18n="f_accent">لون شريط التقدّم</label>
+        <select name="accent">
+          <option value="emerald">أخضر</option>
+          <option value="amber">كهرماني</option>
+          <option value="blue">أزرق</option>
+          <option value="rose">وردي</option>
+        </select>
+      </div>
+
+      <div class="alert alert-info" data-i18n="create_info">
+        كل حملة جديدة تُرسل إلى قائمة المراجعة، ولا تظهر للعامة ولا تقبل تبرعات إلا بعد موافقة فريق المنصة.
+        التوثيق الكامل (شارة «موثّق») يتطلّب مراجعة مستندية إضافية.
+      </div>
+
+      <div class="alert alert-warn" data-i18n="create_wallet_rule">
+        يُمنع وضع أي عنوان محفظة داخل نص الحملة (العنوان أو السطر أو القصة أو التحديثات).
+        العنوان يُوضع في خانة «محفظة الجهة المستفيدة» أدناه فقط، ويظهر للجميع في صفحة الحملة للتحقق.
+      </div>
+
+      <button class="btn btn-primary btn-lg btn-block" type="submit" data-i18n="publish">انشر الحملة</button>
+    </form>
+  </div>
+</main>
+<%- include('partials/footer') %>

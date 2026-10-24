@@ -1,0 +1,59 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container-narrow" style="padding:34px 0 60px">
+    <h1 data-i18n="hiw_title">كيف تعمل المنصة</h1>
+    <p class="muted" data-i18n="hiw_lead">المنصة لا تحتفظ بأي أموال بين التبرعات. كل تبرّع معاملة مستقلة على الشبكة.</p>
+
+    <div class="steps" style="margin:26px 0">
+      <div class="step">
+        <h3 data-i18n="hiw_1_t">1. اختر الحملة</h3>
+        <p class="muted small" data-i18n="hiw_1_b">كل صفحة حملة تعرض عنوان محفظة الجهة المستفيدة، الشبكة، الرموز المدعومة، وهل الحملة موثّقة أو مصرّح بها ذاتيًا. تحقّق من العنوان على المستكشف قبل أي دفعة.</p>
+      </div>
+      <div class="step">
+        <h3 data-i18n="hiw_2_t">2. اربط المحفظة</h3>
+        <p class="muted small" data-i18n="hiw_2_b">المتصفح يطلب توقيع رسالة واحدة عند تسجيل الدخول (لا معاملة ولا خصم). إن لم يكن لديك محفظة، يمكنك إرسال المبلغ مباشرة إلى عنوان المحفظة من تطبيق محفظتك.</p>
+      </div>
+      <div class="step">
+        <h3 data-i18n="hiw_3_t">3. ادفع</h3>
+        <p class="muted small" data-i18n="hiw_3_b">للعملات التي تتطلب موافقة (approve) تكون هناك خطوة إضافية قبل التحويل — يظهر المبلغ والعنوان قبل أي تأكيد على محفظتك.</p>
+      </div>
+      <div class="step">
+        <h3 data-i18n="hiw_4_t">4. يُقسَّم المبلغ على السلسلة</h3>
+        <p class="muted small" data-i18n="hiw_4_b">يستدعي المتبرّع دالة <span class="mono">donate()</span> في عقد <span class="mono">DonationSplitter</span>، فينقل العقد ٩١٪ لمحفظة الجهة المستفيدة و٩٪ لمحفظة المنصة في نفس المعاملة.</p>
+      </div>
+      <div class="step">
+        <h3 data-i18n="hiw_5_t">5. يتحدّث السجل</h3>
+        <p class="muted small" data-i18n="hiw_5_b">يرصد الخادم حدث <span class="mono">DonationReceived</span> بعد تأكيد الكتلة، ويحدّث صفحة الحملة ولوحة الكولكتر — والأرقام لا تأتي من المتصفح.</p>
+      </div>
+      <div class="step">
+        <h3 data-i18n="hiw_6_t">6. تحقّق بنفسك</h3>
+        <p class="muted small" data-i18n="hiw_6_b">كل تبرّع له رابط معاملة ورابط محفظة على مستكشف الكتل. راجعها مستقلًا عن المنصة في أي وقت.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 data-i18n="hiw_contract_t">العقد الذكي</h3>
+      <p class="small muted" data-i18n="hiw_contract_b">
+        العقد مكتوب بـ Solidity ومفتوح المصدر، ومجمّد فيه نسبة الرسوم (900 نقطة أساس = ٩٪) وعنوان محفظة المنصة.
+        لا توجد دالة لتغيير نسبة الرسوم بعد النشر — وهذا مقصود: الداعم يعرف النسبة قبل أن يدفع.
+      </p>
+      <div class="addr-box" style="margin-top:12px">
+        <span class="val">contracts/DonationSplitter.sol</span>
+        <button class="copy-btn" data-copy="contracts/DonationSplitter.sol">⧉</button>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h3 data-i18n="hiw_limits_t">محدوديات يجب أن تعرفها</h3>
+      <ul class="trust-list">
+        <li><span class="ok">⚠</span><span data-i18n="lim_1">لا يوجد استرداد تلقائي: مدفوعات العملات الرقمية نهائية.</span></li>
+        <li><span class="ok">⚠</span><span data-i18n="lim_2">الأسعار بالدولار تقديرية وتُحدَّث من مصادر عامة؛ قد يختلف وقت التنفيذ.</span></li>
+        <li><span class="ok">⚠</span><span data-i18n="lim_3">التبرّع بالعملات الرقمية قد يخلق التزامًا ضريبيًا للمتبرّع بحسب بلده.</span></li>
+        <li><span class="ok">⚠</span><span data-i18n="lim_4">حالة "موثّق" تُمنح بعد مراجعة مستندية من فريق المنصة، وليست تلقائية.</span></li>
+        <li><span class="ok">⚠</span><span data-i18n="lim_5">لا تحجز المنصة أي مبلغ نيابة عنك ولا تحتفظ بأموالك.</span></li>
+      </ul>
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

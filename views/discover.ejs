@@ -1,0 +1,81 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+<section class="section" style="padding-bottom:0">
+  <div class="container">
+    <h1 style="margin:0 0 18px" data-i18n="discover_title">اكتشف الحملات</h1>
+    <form class="spread" action="/discover" method="get" style="margin-bottom:22px">
+      <div class="header-search" style="max-width:none">
+        <span class="icon">⌕</span>
+        <input type="text" name="search" value="<%= filters.search %>" placeholder="ابحث بالعنوان أو اسم الجهة…">
+      </div>
+      <div class="row-flex">
+        <select name="category" data-autosubmit style="width:auto">
+          <option value="all">كل الفئات</option>
+          <% categories.forEach(cat => { %>
+            <option value="<%= cat.key %>" <%= filters.category === cat.key ? 'selected' : '' %>><%= cat.label %></option>
+          <% }); %>
+        </select>
+        <select name="sort" data-autosubmit style="width:auto">
+          <option value="recent" <%= filters.sort === 'recent' ? 'selected' : '' %>>الأحدث</option>
+          <option value="goal" <%= filters.sort === 'goal' ? 'selected' : '' %>>الأعلى هدفًا</option>
+          <option value="ending" <%= filters.sort === 'ending' ? 'selected' : '' %>>الأقرب للهدف</option>
+        </select>
+        <button class="btn btn-primary btn-sm" type="submit" data-i18n="search_btn">بحث</button>
+      </div>
+    </form>
+
+    <div class="chip-row" style="margin-bottom:20px">
+      <a class="chip <%= !filters.category || filters.category === 'all' ? 'active' : '' %>" href="/discover<%= filters.search ? '?search=' + encodeURIComponent(filters.search) : '' %>">الكل</a>
+      <% categories.forEach(cat => { %>
+        <a class="chip <%= filters.category === cat.key ? 'active' : '' %>" href="/discover?category=<%= cat.key %><%= filters.search ? '&search=' + encodeURIComponent(filters.search) : '' %>">
+          <%= cat.label %> <span class="count">(<%= cat.count %>)</span>
+        </a>
+      <% }); %>
+    </div>
+
+    <p class="muted small" style="margin-bottom:18px">
+      <%= total %> <span data-i18n="results">نتيجة</span>
+    </p>
+
+    <% if (!campaigns.length) { %>
+      <div class="empty" data-i18n="no_results">لا توجد حملات مطابقة. جرّب فئة أخرى أو ابدأ حملتك بنفسك.</div>
+    <% } else { %>
+      <div class="grid">
+        <% campaigns.forEach(c => { %>
+          <article class="card">
+            <div class="card-media">
+              <% if (c.cover_url) { %><img src="<%= c.cover_url %>" alt="<%= c.title %>" loading="lazy"><% } %>
+              <div class="fallback">💚</div>
+              <span class="tag"><%= helpers.categoryLabel(c.category) %></span>
+            </div>
+            <div class="card-body">
+              <h3 class="card-title" data-no-i18n><a href="/c/<%= c.slug %>"><%= helpers.localizedCampaign(c).title %></a></h3>
+              <p class="card-sub" data-no-i18n><%= helpers.localizedCampaign(c).subtitle %></p>
+              <div class="progress <%= c.accent || 'emerald' %>"><i style="width:<%= c.progress.toFixed(1) %>%"></i></div>
+              <div class="card-meta">
+                <span><strong><%= helpers.usdShort(c.raised_usd) %></strong> <%= c.donors %> <span data-i18n="donors_word">تبرّعات</span></span>
+                <span><%= Math.round(c.progress) %>%</span>
+              </div>
+              <div class="card-meta">
+                <span class="muted small"><%= helpers.usdShort(c.goal_usd) %> <span data-i18n="goal_word">هدف</span></span>
+                <span class="badge badge-chain"><%= helpers.chainName(c.chain_id) %></span>
+              </div>
+            </div>
+          </article>
+        <% }); %>
+      </div>
+
+      <% if (pages > 1) { %>
+        <div class="row-flex" style="justify-content:center;margin-top:28px">
+          <% for (let i = 1; i <= pages; i++) { %>
+            <a class="btn btn-sm <%= i === page ? 'btn-primary' : 'btn-outline' %>"
+               href="/discover?page=<%= i %><%= filters.search ? '&search=' + encodeURIComponent(filters.search) : '' %><%= filters.category ? '&category=' + filters.category : '' %><%= filters.sort ? '&sort=' + filters.sort : '' %>"><%= i %></a>
+          <% } %>
+        </div>
+      <% } %>
+    <% } %>
+  </div>
+</section>
+</main>
+<%- include('partials/footer') %>

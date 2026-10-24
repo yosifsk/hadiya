@@ -1,0 +1,31 @@
+{
+  "name": "hadba-web3",
+  "version": "1.0.0",
+  "private": true,
+  "description": "منصة تبرّع بالعملات الرقمية — ٩٪ رسوم منصة، ٩١٪ تصل مباشرة لمحفظة الجهة المستفيدة",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node src/seed.js",
+    "test": "node --test \"tests/**/*.test.js\"",
+    "test:admin": "node scripts/test-admin-api.js",
+    "test:create": "node scripts/test-create-flow.js",
+    "compile:contracts": "node contracts/compile.js",
+    "deploy:contracts": "node scripts/deploy.js",
+    "set:tiers": "node scripts/set-tiers.js",
+    "ipfs:pin": "node scripts/ipfs-pin.js",
+    "verify:tokens": "node scripts/verify-tokens.js",
+    "test:user": "node scripts/test-user-flow.js",
+    "test:assistant": "node scripts/test-assistant-admin.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "viem": "^2.21.55"
+  },
+  "devDependencies": {
+    "solc": "0.8.26"
+  }
+}

@@ -1,0 +1,29 @@
+# --- أسرار البيئة (لا تُرفع أبدًا) ---
+.env
+.env.local
+*.env
+!/.env.example
+
+# --- البيانات وقاعدة SQLite (تُنشأ تلقائيًا) ---
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
+# --- مخرجات البناء ---
+contracts/build/
+node_modules/
+npm-debug.log*
+*.log
+server.out
+server.err
+
+# --- ملفات النظام ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- نسخ احتياطية محلية ---
+_backups/
+*.zip

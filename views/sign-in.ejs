@@ -1,0 +1,63 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+<main id="main">
+  <div class="container-narrow" style="padding:34px 0 60px" id="signin-page" data-next="<%= typeof next !== 'undefined' ? next : '' %>">
+    <% if (typeof reason !== 'undefined' && reason === 'create') { %>
+      <div class="alert alert-info" data-i18n="signin_create_reason">
+        لإنشاء حملة تحتاج حسابًا — وهي خطوة واحدة: وقّع رسالة من محفظتك. بعدها تُكمل مباشرة.
+      </div>
+    <% } %>
+
+    <h1 data-i18n="signin_title">أنشئ حسابك</h1>
+    <p class="muted" data-i18n="signin_lead">
+      حسابك في هذه المنصة هو **عنوان محفظتك** — لا كلمة مرور ولا بريد إلكتروني ولا Seeds.
+      نطلب توقيع رسالة واحدة فقط، ولا تُرسل أي معاملة ولا يُخصم أي مبلغ.
+    </p>
+
+    <div class="panel" style="margin-top:20px">
+      <div class="field">
+        <label data-i18n="wallet_address">عنوان المحفظة</label>
+        <input type="text" id="signin-address" placeholder="0x…" autocomplete="off">
+        <div class="hint" data-i18n="signin_hint">سيطلب متصفحك توقيع رسالة — لن يتم إرسال أي معاملة ولا خصم أي مبلغ.</div>
+      </div>
+      <div class="row-flex">
+        <button class="btn btn-outline" id="btn-read-address" data-i18n="read_from_wallet">قراءة العنوان من المحفظة</button>
+        <button class="btn btn-primary" id="btn-signin" data-i18n="signin_btn">توقيع وإنشاء الحساب</button>
+      </div>
+      <div id="signin-status" class="small" style="margin-top:12px"></div>
+      <% if (typeof next !== 'undefined' && next) { %>
+        <div class="small muted" style="margin-top:10px" data-i18n="signin_continue">
+          بعد التوقيع ستعود تلقائيًا إلى الصفحة التي طلبتها.
+        </div>
+      <% } %>
+    </div>
+
+    <div class="grid-3" style="margin-top:22px">
+      <div class="panel">
+        <h3>🔑 <span data-i18n="why_title">لماذا لا كلمة مرور؟</span></h3>
+        <p class="small muted" data-i18n="why_body">
+          كلمة المرور تُخزَّن وتُسرق وتُعاد استخدامها. التوقيع بالمحفظة لا يمكن نسخه ولا
+          يُستخدم في مكان آخر — لهذا لا نحفظ أي سر منك على الإطلاق.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>👤 <span data-i18n="why_title2">ماذا يعني ذلك لك؟</span></h3>
+        <p class="small muted" data-i18n="why_body2">
+          يصبح عنوانك هو هويتك: هو من يملك الحملة، ومن يوقّع تغيير محفظة الجهة المستفيدة،
+          ومن يظهر في سجل التبرعات باسمك.
+        </p>
+      </div>
+      <div class="panel">
+        <h3>🛡️ <span data-i18n="why_title3">الخصوصية</span></h3>
+        <p class="small muted" data-i18n="why_body3">
+          عنوانك عام على الشبكة أصلًا. نحتفظ به فقط لربطك بحملاتك وتبرعاتك — ولا نشاركه مع أحد.
+        </p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="margin-top:18px" data-i18n="signin_info">
+      باستخدام المنصة أنت توافق على <a href="/terms">الشروط</a> و<a href="/privacy">سياسة الخصوصية</a>.
+    </div>
+  </div>
+</main>
+<%- include('partials/footer') %>

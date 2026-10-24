@@ -1,0 +1,46 @@
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="/">
+      <span class="logo-mark">✦</span>
+      <span>
+        <span data-i18n="brand_name"><%= brand.nameAr %></span>
+        <span class="logo-sub" data-i18n="brand_name_en"><%= brand.name %></span>
+      </span>
+    </a>
+
+    <form class="header-search" action="/discover" method="get" role="search">
+      <span class="icon">⌕</span>
+      <input type="text" name="search" placeholder="ابحث عن حملة…" aria-label="ابحث عن حملة" value="<%= (typeof query !== 'undefined' && query.search) || '' %>">
+    </form>
+
+    <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"
+            aria-label="القائمة" title="القائمة" data-i18n-title="menu_label">
+      <span class="bars" aria-hidden="true"></span>
+    </button>
+
+    <nav class="nav" id="site-nav">
+      <div class="nav-links">
+        <a href="/discover" class="<%= path === '/discover' ? 'active' : '' %> hide-sm" data-i18n="nav_discover">اكتشف الحملات</a>
+        <a href="/how-it-works" class="hide-sm" data-i18n="nav_how">كيف تعمل</a>
+        <a href="/pricing" class="hide-sm" data-i18n="nav_pricing">الرسوم</a>
+        <a href="/faq" class="hide-sm" data-i18n="nav_faq">الأسئلة</a>
+      </div>
+      <div class="nav-actions">
+        <a href="/create" class="btn btn-primary btn-sm" data-i18n="nav_create">ابدأ حملة</a>
+        <% if (user) { %>
+          <a class="wallet-chip" href="/account" title="حسابي"><span class="dot on"></span><%= helpers.shortAddr(user) %></a>
+        <% } else { %>
+          <a class="btn btn-outline btn-sm" href="/login" data-i18n="nav_signin">دخول</a>
+          <a class="btn btn-ghost btn-sm" href="/register" data-i18n="nav_register">حساب جديد</a>
+        <% } %>
+      </div>
+      <div class="nav-tools">
+        <span class="lang-toggle" title="اللغة / Language">
+          <button type="button" data-lang="ar" class="active">ع</button>
+          <button type="button" data-lang="en">EN</button>
+        </span>
+        <button class="theme-btn" type="button" data-theme-toggle title="تخصيص المظهر / Appearance" aria-label="تخصيص المظهر">🎨</button>
+      </div>
+    </nav>
+  </div>
+</header>
